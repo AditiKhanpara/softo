@@ -10,6 +10,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
 
+import softoClientsService from '../../../services/softoClientsService';
+
 const AddSoftoClient = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -86,11 +88,11 @@ const AddSoftoClient = () => {
     setLoading(true);
     
     try {
-      // TODO: Implement API call
-      console.log('Submitting client data:', formData);
+      // Remove confirmPassword from the data sent to API
+      const { confirmPassword, ...clientData } = formData;
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await softoClientsService.createClient(clientData);
+      console.log('Client created:', response);
       
       alert('Client added successfully!');
       navigate('/user-dashboard/module/softo-clients');

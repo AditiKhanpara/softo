@@ -12,6 +12,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { Link, useParams } from 'react-router-dom';
 
+import softoClientsService from '../../../services/softoClientsService';
+
 const ViewSoftoClient = () => {
   const { id } = useParams();
   const [client, setClient] = useState(null);
@@ -23,25 +25,10 @@ const ViewSoftoClient = () => {
     const fetchClient = async () => {
       try {
         setLoading(true);
-        // TODO: Implement API call to fetch client by ID
-        console.log('Fetching client with ID:', id);
+        const data = await softoClientsService.getClientById(id);
+        console.log('Client data:', data);
         
-        // Simulate API call with mock data
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const mockClient = {
-          id: id,
-          fullName: 'John Doe',
-          email: 'john@example.com',
-          whatsappNumber: '+1234567890',
-          city: 'New York',
-          address: '123 Main St, New York, NY 10001',
-          hasPassword: true,
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-20T14:45:00Z'
-        };
-        
-        setClient(mockClient);
+        setClient(data);
         setError(null);
       } catch (err) {
         console.error('Error fetching client:', err);

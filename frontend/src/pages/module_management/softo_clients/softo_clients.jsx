@@ -9,6 +9,7 @@ import {
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+import softoClientsService from '../../../services/softoClientsService';
 
 const SoftoClients = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,44 +17,35 @@ const SoftoClients = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Mock data for demonstration
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setClients([
-        {
-          id: 1,
-          fullName: 'John Doe',
-          email: 'john@example.com',
-          whatsappNumber: '+1234567890',
-          city: 'New York',
-          address: '123 Main St, New York, NY 10001',
-          hasPassword: true,
-          createdAt: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: 2,
-          fullName: 'Jane Smith',
-          email: 'jane@example.com',
-          whatsappNumber: '+1987654321',
-          city: 'Los Angeles',
-          address: '456 Oak Ave, Los Angeles, CA 90210',
-          hasPassword: false,
-          createdAt: '2024-01-20T14:45:00Z'
-        },
-        {
-          id: 3,
-          fullName: 'Mike Johnson',
-          email: 'mike@example.com',
-          whatsappNumber: '+1122334455',
-          city: 'Chicago',
-          address: '789 Pine St, Chicago, IL 60601',
-          hasPassword: true,
-          createdAt: '2024-01-25T09:15:00Z'
-        }
-      ]);
+  // Fetch clients from API
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      const data = await softoClientsService.getAllClients();
+      console.log('Softo clients data:', data);
+      setClients(Array.isArray(data) ? data : []);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching softo clients:', err);
+      setError('Failed to fetch clients. Please try again.');
+      setClients([]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  // Refresh clients when component comes into focus
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchClients();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const filteredClients = clients.filter(client => {
@@ -65,10 +57,9 @@ const SoftoClients = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this client?')) {
       try {
-        // TODO: Implement API call
-        const updatedClients = clients.filter(client => client.id !== id);
-        setClients(updatedClients);
+        await softoClientsService.deleteClient(id);
         alert('Client deleted successfully!');
+        fetchClients(); // Refresh the list
       } catch (error) {
         console.error('Error deleting client:', error);
         alert('Failed to delete client. Please try again.');
@@ -77,6 +68,7 @@ const SoftoClients = () => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -84,24 +76,22 @@ const SoftoClients = () => {
     });
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Client Management</h2>
-        <p className="text-gray-600">
-          View and manage your client information and project details.
-        </p>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h3 className="text-lg font-medium text-gray-900">Client Directory</h3>
-            <div className="flex gap-2">
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Clients</h2>
+              <p className="text-gray-600">
+                Manage your client information and access their details.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => window.location.reload()}
+                onClick={fetchClients}
                 disabled={loading}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 shadow-sm flex items-center gap-2 disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
               >
                 <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
@@ -117,92 +107,131 @@ const SoftoClients = () => {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search clients by name, email, or city..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200"
-            />
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-12 bg-gray-200 rounded"></div>
+              ))}
+            </div>
           </div>
         </div>
+      </div>
+    );
+  }
 
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Clients</h2>
+            <p className="text-gray-600">
+              Manage your client information and access their details.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={fetchClients}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
+            >
+              <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+            <Link
+              to="/user-dashboard/module/softo-clients/add"
+              className="flex items-center gap-2 px-4 py-2 bg-[#800000]/90 hover:bg-[#800000] text-white rounded-lg transition-colors duration-200"
+            >
+              <PlusIcon className="w-4 h-4" />
+              Add Client
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search clients by name, email, or city..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
+
+      {/* Clients Table */}
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          {loading ? (
-            <div className="text-center text-gray-500 py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#800000] mx-auto mb-4"></div>
-              <p>Loading clients...</p>
-            </div>
-          ) : error ? (
-            <div className="text-center text-gray-500 py-8">
-              <UserIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-red-600">{error}</p>
-              <button 
-                onClick={() => window.location.reload()} 
-                className="mt-2 px-4 py-2 bg-[#800000]/90 hover:bg-[#800000] text-white rounded-lg transition-colors duration-200"
-              >
-                Try Again
-              </button>
-            </div>
-          ) : filteredClients.length > 0 ? (
-            <table className="w-full">
-              <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Client
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Contact
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Location
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredClients.length === 0 ? (
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Client
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Location
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Portal Access
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date Added
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                    {loading ? 'Loading clients...' : 'No clients found'}
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredClients.map((client) => (
-                  <tr key={client.id} className="hover:bg-gray-50">
+              ) : (
+                filteredClients.map((client) => (
+                  <tr key={client.id} className="hover:bg-gray-50 transition-colors duration-200">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{client.fullName}</div>
-                        <div className="text-sm text-gray-500">ID: {client.id}</div>
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-[#800000]/10 rounded-full flex items-center justify-center">
+                          <UserIcon className="w-4 h-4 text-[#800000]" />
+                        </div>
+                        <div className="ml-3">
+                          <div className="text-sm font-medium text-gray-900">
+                            {client.fullName || 'N/A'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ID: {client.id?.slice(0, 8)}...
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm text-gray-900">{client.email}</div>
-                        <div className="text-sm text-gray-500">{client.whatsappNumber}</div>
-                      </div>
+                      <div className="text-sm text-gray-900">{client.email || 'N/A'}</div>
+                      <div className="text-sm text-gray-500">{client.whatsappNumber || 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm text-gray-900">{client.city}</div>
-                        <div className="text-sm text-gray-500 truncate max-w-xs">{client.address}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {client.hasPassword ? (
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                          Active
-                        </span>
-                      ) : (
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                          No Access
-                        </span>
-                      )}
+                      <div className="text-sm text-gray-900">{client.city || 'N/A'}</div>
+                      <div className="text-sm text-gray-500">{client.address || 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(client.createdAt)}
@@ -233,15 +262,22 @@ const SoftoClients = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div className="text-center text-gray-500 py-8">
-              <UserIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p>No clients found. {searchTerm ? 'Try adjusting your search criteria.' : 'Add your first client to get started.'}</p>
-            </div>
-          )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Summary */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-gray-600">
+            Showing {filteredClients.length} of {clients.length} clients
+          </p>
+          <p className="text-sm text-gray-600">
+            Total clients: {clients.length}
+          </p>
         </div>
       </div>
     </div>

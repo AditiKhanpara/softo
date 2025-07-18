@@ -10,6 +10,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
+import softoLeadsService from '../../../services/softoLeadsService';
+
 const EditSoftoLead = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -44,26 +46,21 @@ const EditSoftoLead = () => {
     const fetchLead = async () => {
       try {
         setLoading(true);
-        // TODO: Implement API call to fetch lead by ID
-        console.log('Fetching lead with ID:', id);
+        const data = await softoLeadsService.getLeadById(id);
+        console.log('Lead data:', data);
         
-        // Simulate API call with mock data
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const mockLead = {
-          id: id,
-          fullName: 'Alice Johnson',
-          email: 'alice@example.com',
-          whatsappNumber: '+1234567890',
-          city: 'Boston',
-          address: '123 Oak St, Boston, MA 02101',
-          source: 'website',
-          squareFeet: '1500',
-          remark: 'Interested in web development',
-          createdAt: '2024-01-15T10:30:00Z'
-        };
-        
-        setFormData(mockLead);
+        setFormData({
+          fullName: data.fullName || '',
+          email: data.email || '',
+          whatsappNumber: data.whatsappNumber || '',
+          city: data.city || '',
+          address: data.address || '',
+          source: data.source || '',
+          squareFeet: data.squareFeet || '',
+          remark: data.remark || '',
+          password: '',
+          confirmPassword: ''
+        });
         setError(null);
       } catch (err) {
         console.error('Error fetching lead:', err);
@@ -139,11 +136,11 @@ const EditSoftoLead = () => {
     setSaving(true);
     
     try {
-      // TODO: Implement API call
-      console.log('Updating lead data:', formData);
+      // Remove confirmPassword from the data sent to API
+      const { confirmPassword, ...leadData } = formData;
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await softoLeadsService.updateLead(id, leadData);
+      console.log('Lead updated:', response);
       
       alert('Lead updated successfully!');
       navigate('/user-dashboard/module/softo-leads');

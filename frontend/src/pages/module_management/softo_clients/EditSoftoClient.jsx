@@ -10,6 +10,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
+import softoClientsService from '../../../services/softoClientsService';
+
 const EditSoftoClient = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -34,29 +36,15 @@ const EditSoftoClient = () => {
     const fetchClient = async () => {
       try {
         setLoading(true);
-        // TODO: Implement API call to fetch client by ID
-        console.log('Fetching client with ID:', id);
-        
-        // Simulate API call with mock data
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const mockClient = {
-          id: id,
-          fullName: 'John Doe',
-          email: 'john@example.com',
-          whatsappNumber: '+1234567890',
-          city: 'New York',
-          address: '123 Main St, New York, NY 10001',
-          hasPassword: true,
-          createdAt: '2024-01-15T10:30:00Z'
-        };
+        const data = await softoClientsService.getClientById(id);
+        console.log('Client data:', data);
         
         setFormData({
-          fullName: mockClient.fullName,
-          email: mockClient.email,
-          whatsappNumber: mockClient.whatsappNumber,
-          city: mockClient.city,
-          address: mockClient.address,
+          fullName: data.fullName || '',
+          email: data.email || '',
+          whatsappNumber: data.whatsappNumber || '',
+          city: data.city || '',
+          address: data.address || '',
           password: '',
           confirmPassword: ''
         });
@@ -137,14 +125,14 @@ const EditSoftoClient = () => {
     setSaving(true);
     
     try {
-      // TODO: Implement API call
-      console.log('Updating client data:', formData);
+      // Remove confirmPassword from the data sent to API
+      const { confirmPassword, ...clientData } = formData;
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await softoClientsService.updateClient(id, clientData);
+      console.log('Client updated:', response);
       
-              alert('Client updated successfully!');
-        navigate('/user-dashboard/module/softo-clients');
+      alert('Client updated successfully!');
+      navigate('/user-dashboard/module/softo-clients');
     } catch (error) {
       console.error('Error updating client:', error);
       alert('Failed to update client. Please try again.');

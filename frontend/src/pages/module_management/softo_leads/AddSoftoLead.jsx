@@ -9,6 +9,7 @@ import {
   HomeIcon
 } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
+import softoLeadsService from '../../../services/softoLeadsService';
 
 const AddSoftoLead = () => {
   const navigate = useNavigate();
@@ -97,11 +98,11 @@ const AddSoftoLead = () => {
     setLoading(true);
     
     try {
-      // TODO: Implement API call
-      console.log('Submitting lead data:', formData);
+      // Remove confirmPassword from the data sent to API
+      const { confirmPassword, ...leadData } = formData;
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await softoLeadsService.createLead(leadData);
+      console.log('Lead created:', response);
       
       alert('Lead added successfully!');
       navigate('/user-dashboard/module/softo-leads');

@@ -12,6 +12,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { Link, useParams } from 'react-router-dom';
 
+import softoLeadsService from '../../../services/softoLeadsService';
+
 const ViewSoftoLead = () => {
   const { id } = useParams();
   const [lead, setLead] = useState(null);
@@ -23,27 +25,10 @@ const ViewSoftoLead = () => {
     const fetchLead = async () => {
       try {
         setLoading(true);
-        // TODO: Implement API call to fetch lead by ID
-        console.log('Fetching lead with ID:', id);
+        const data = await softoLeadsService.getLeadById(id);
+        console.log('Lead data:', data);
         
-        // Simulate API call with mock data
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const mockLead = {
-          id: id,
-          fullName: 'Alice Johnson',
-          email: 'alice@example.com',
-          whatsappNumber: '+1234567890',
-          city: 'Boston',
-          address: '123 Oak St, Boston, MA 02101',
-          source: 'website',
-          squareFeet: '1500',
-          remark: 'Interested in web development. Looking for a modern e-commerce website with payment integration and inventory management system.',
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-20T14:45:00Z'
-        };
-        
-        setLead(mockLead);
+        setLead(data);
         setError(null);
       } catch (err) {
         console.error('Error fetching lead:', err);
