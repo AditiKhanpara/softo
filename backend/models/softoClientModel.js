@@ -29,14 +29,10 @@ const Client = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
     createdBy: {
       type: DataTypes.UUID,
       references: {
-        model: "users",
+        model: "client",
         key: "id",
       },
       allowNull: true,
@@ -44,19 +40,7 @@ const Client = sequelize.define(
   },
   {
     timestamps: true,
-    tableName: "clients",
-    hooks: {
-      beforeCreate: async (client) => {
-        if (client.password) {
-          client.password = await bcrypt.hash(client.password, 10);
-        }
-      },
-      beforeUpdate: async (client) => {
-        if (client.changed("password")) {
-          client.password = await bcrypt.hash(client.password, 10);
-        }
-      },
-    },
+    tableName: "s_clients",
   }
 );
 

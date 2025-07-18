@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { User } = require("../models");
+const { User, Client } = require("../models");
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret"; // Use .env in production
 
@@ -58,11 +58,6 @@ exports.login = async (req, res) => {
       message: "Login successful",
       data: {
         token,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-        },
       },
       success: true,
     });
@@ -70,6 +65,43 @@ exports.login = async (req, res) => {
     console.error(err);
     return res.status(500).json({
       message: "Login failed",
+      data: {},
+      success: false,
+    });
+  }
+};
+
+exports.loginClient = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const client = await Client.findOne({ where: { email } });
+    if (!client)
+      return res
+        .status(404)
+        .json({ message: "Client not found", data: {}, success: false });
+
+    const isMatch = await client.comparePassword(password);
+    if (!isMatch)
+      return res
+        .status(401)
+        .json({ message: "Invalid credentials", data: {}, success: false });
+
+    const token = jwt.sign({ clientId: client.id }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    return res.status(200).json({
+      message: "Client login successful",
+      data: {
+        token,
+      },
+      success: true,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Client login failed",
       data: {},
       success: false,
     });

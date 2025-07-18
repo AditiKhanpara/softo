@@ -36,4 +36,4 @@ const authenticated = async (req, res, next) => {
   }
 };
 
-module.exports = authenticated;
+module.exports = { authenticated };

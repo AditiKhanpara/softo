@@ -7,14 +7,12 @@ const {
   updateLead,
   deleteLead,
 } = require("../controllers/leadController");
-// const authenticate = require("../middleware/authenticate"); // ensure req.user is set
+const { authenticated } = require("../middleware/authMiddleware");
 
-// router.use(authenticate);
-
-router.post("/create", createLead);
-router.get("/getall", getAllLeads);
-router.get("/get/:id", getLeadById);
-router.put("/update/:id", updateLead);
-router.delete("/delete/:id", deleteLead);
+router.post("/create", authenticated, createLead);
+router.get("/getall", authenticated, getAllLeads);
+router.get("/get/:id", authenticated, getLeadById);
+router.put("/update/:id", authenticated, updateLead);
+router.delete("/delete/:id", authenticated, deleteLead);
 
 module.exports = router;

@@ -3,11 +3,10 @@ const { Lead } = require("../models");
 // Create Lead
 exports.createLead = async (req, res) => {
   try {
-    const { userId, clientId } = req.user;
+    const { userId } = req.user;
     const newLead = await Lead.create({
       ...req.body,
       createdBy: userId,
-      createdByClient: clientId,
     });
     res.status(201).json(newLead);
   } catch (error) {
@@ -22,7 +21,6 @@ exports.getAllLeads = async (req, res) => {
     const leads = await Lead.findAll({
       where: {
         createdBy: userId,
-        createdByClient: clientId,
       },
     });
     res.status(200).json(leads);
