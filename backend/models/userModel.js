@@ -6,9 +6,9 @@ const User = sequelize.define(
   "User",
   {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-      autoIncrement: true,
     },
     username: {
       type: DataTypes.STRING,
@@ -29,7 +29,6 @@ const User = sequelize.define(
     timestamps: true,
     tableName: "users",
 
-    // Hooks to hash password before save
     hooks: {
       beforeCreate: async (user) => {
         if (user.password) {
@@ -45,7 +44,6 @@ const User = sequelize.define(
   }
 );
 
-// Instance method to compare passwords
 User.prototype.comparePassword = async function (plainPassword) {
   return await bcrypt.compare(plainPassword, this.password);
 };

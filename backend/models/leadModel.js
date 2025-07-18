@@ -52,14 +52,6 @@ const Lead = sequelize.define(
       },
       allowNull: true,
     },
-    createdByClient: {
-      type: DataTypes.UUID,
-      references: {
-        model: "clients",
-        key: "id",
-      },
-      allowNull: true,
-    },
   },
   {
     timestamps: true,
