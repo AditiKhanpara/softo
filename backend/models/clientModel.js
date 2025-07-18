@@ -42,6 +42,11 @@ const Client = sequelize.define(
       },
       allowNull: true,
     },
+    role: {
+      type: DataTypes.ENUM("admin", "client"),
+      allowNull: false,
+      defaultValue: "client",
+    },
   },
   {
     timestamps: true,

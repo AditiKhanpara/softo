@@ -20,14 +20,10 @@ const authenticated = async (req, res, next) => {
     let userOrClient = null;
 
     if (decoded.userId) {
-      userOrClient = await User.findByPk(decoded.userId, {
-        attributes: ["id", "username", "email"],
-      });
+      userOrClient = await User.findByPk(decoded.userId);
       if (userOrClient) req.user = userOrClient;
     } else if (decoded.clientId) {
-      userOrClient = await Client.findByPk(decoded.clientId, {
-        attributes: ["id", "fullName", "email"],
-      });
+      userOrClient = await Client.findByPk(decoded.clientId);
       if (userOrClient) req.user = userOrClient;
     }
 

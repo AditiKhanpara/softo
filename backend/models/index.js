@@ -6,25 +6,60 @@ const SoftoClient = require("./softoClientModel");
 const SoftoLead = require("./softoLeadModel");
 
 // User relationships
-User.hasMany(Lead, { foreignKey: "createdBy" });
-User.hasMany(Client, { foreignKey: "createdBy" });
+User.hasMany(Lead, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+User.hasMany(Client, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
 
 // Lead relationships
-Lead.belongsTo(User, { foreignKey: "createdBy" });
+Lead.belongsTo(User, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
 
 // Client relationships
-Client.belongsTo(User, { foreignKey: "createdBy" });
-Client.hasMany(SoftoClient, { foreignKey: "createdBy" });
+Client.belongsTo(User, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+Client.hasMany(SoftoClient, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+Client.hasMany(SoftoLead, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
 // softoClient relationships
-SoftoClient.belongsTo(Client, { foreignKey: "createdBy" });
+SoftoClient.belongsTo(Client, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
 
 // softoLead relationships
-SoftoLead.belongsTo(Client, { foreignKey: "createdBy" });
+SoftoLead.belongsTo(Client, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
 
 module.exports = {
   User,
   Lead,
   Client,
   rolePermission,
+  SoftoClient,
+  SoftoLead,
 };
