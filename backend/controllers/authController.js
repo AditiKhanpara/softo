@@ -38,70 +38,64 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // First check in User table
     const user = await User.findOne({ where: { email } });
-    if (!user)
-      return res
-        .status(404)
-        .json({ message: "User not found", data: {}, success: false });
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch)
-      return res
-        .status(401)
-        .json({ message: "Invalid credentials", data: {}, success: false });
+    if (user) {
+      const isMatch = await user.comparePassword(password);
+      if (!isMatch) {
+        return res.status(401).json({
+          message: "Invalid credentials",
+          data: {},
+          success: false,
+        });
+      }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-      expiresIn: "7d",
-    });
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
 
-    return res.status(200).json({
-      message: "Login successful",
-      data: {
-        token,
-      },
-      success: true,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({
-      message: "Login failed",
+      return res.status(200).json({
+        message: "User login successful",
+        data: { token },
+        success: true,
+      });
+    }
+
+    // If not found in User, check in Client table
+    const client = await Client.findOne({ where: { email } });
+
+    if (client) {
+      const isMatch = await client.comparePassword(password);
+      if (!isMatch) {
+        return res.status(401).json({
+          message: "Invalid credentials",
+          data: {},
+          success: false,
+        });
+      }
+
+      const token = jwt.sign({ clientId: client.id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      return res.status(200).json({
+        message: "Client login successful",
+        data: { token },
+        success: true,
+      });
+    }
+
+    // If neither User nor Client found
+    return res.status(404).json({
+      message: "User or Client not found",
       data: {},
       success: false,
     });
-  }
-};
-
-exports.loginClient = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const client = await Client.findOne({ where: { email } });
-    if (!client)
-      return res
-        .status(404)
-        .json({ message: "Client not found", data: {}, success: false });
-
-    const isMatch = await client.comparePassword(password);
-    if (!isMatch)
-      return res
-        .status(401)
-        .json({ message: "Invalid credentials", data: {}, success: false });
-
-    const token = jwt.sign({ clientId: client.id }, JWT_SECRET, {
-      expiresIn: "7d",
-    });
-
-    return res.status(200).json({
-      message: "Client login successful",
-      data: {
-        token,
-      },
-      success: true,
-    });
   } catch (err) {
-    console.error(err);
+    console.error("Login Error:", err);
     return res.status(500).json({
-      message: "Client login failed",
+      message: "Login failed",
       data: {},
       success: false,
     });

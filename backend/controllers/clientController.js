@@ -3,52 +3,65 @@ const { Lead } = require("../models");
 
 exports.createClient = async (req, res) => {
   try {
-    const { id, password } = req.body;
+    const { id, password, fullName, city, email, whatsappNumber, address } =
+      req.body;
 
-    if (!id || !password) {
-      return res.status(400).json({
-        message: "Lead ID and password are required",
-        data: {},
-        success: false,
+    // CASE 1: Convert Lead to Client
+    if (id && password) {
+      const lead = await Lead.findOne({
+        where: { id, createdBy: req.user.id },
+      });
+
+      if (!lead) {
+        return res.status(404).json({
+          message: "Lead not found",
+          data: {},
+          success: false,
+        });
+      }
+
+      if (lead.addToClient) {
+        return res.status(409).json({
+          message: "Lead already converted to client",
+          data: {},
+          success: false,
+        });
+      }
+
+      const client = await Client.create({
+        fullName: lead.fullName,
+        city: lead.city,
+        email: lead.email,
+        whatsappNumber: lead.whatsappNumber,
+        address: lead.address,
+        password,
+        createdBy: req.user.id,
+      });
+
+      // Mark lead as converted
+      lead.addToClient = true;
+      await lead.save();
+
+      return res.status(201).json({
+        message: "Client created from lead successfully",
+        data: client,
+        success: true,
       });
     }
 
-    const lead = await Lead.findOne({ where: { id, createdBy: req.user.id } });
-
-    if (!lead) {
-      return res.status(404).json({
-        message: "Lead not found",
-        data: {},
-        success: false,
-      });
-    }
-
-    if (lead.addToClient) {
-      await lead.update({ addToClient: true });
-      return res.status(409).json({
-        message: "Lead already converted to client",
-        data: {},
-        success: false,
-      });
-    }
-
-    // Create client using data from lead + password from user input
+    // CASE 2: Direct Client Creation
     const client = await Client.create({
-      fullName: lead.fullName,
-      city: lead.city,
-      email: lead.email,
-      whatsappNumber: lead.whatsappNumber,
-      address: lead.address,
-      password: password, // gets hashed by hook
+      fullName,
+      city,
+      email,
+      whatsappNumber,
+      address,
+      password, // optional but will be hashed if present
       createdBy: req.user.id,
     });
 
-    // Mark lead as converted
-    lead.addToClient = true;
-    await lead.save();
-
     return res.status(201).json({
-      message: "Client created successfully from lead",
+      message: "Client created successfully",
       data: client,
       success: true,
     });

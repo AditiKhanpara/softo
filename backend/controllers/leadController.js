@@ -19,7 +19,7 @@ exports.getAllLeads = async (req, res) => {
   try {
     const { id } = req.user;
 
-    if (!{ id }) {
+    if (!id) {
       return res.status(400).json({
         success: false,
         message: "User ID is missing in request",
@@ -29,7 +29,7 @@ exports.getAllLeads = async (req, res) => {
 
     const leads = await Lead.findAll({
       where: {
-        createdBy: { id },
+        createdBy: id,
         addToClient: false,
       },
     });

@@ -1,4 +1,4 @@
-const { User } = require("../models");
+const { User, Client } = require("../models");
 
 // CREATE user (optional for admin, usually use signup route)
 exports.createUser = async (req, res) => {
@@ -79,19 +79,26 @@ exports.deleteUser = async (req, res) => {
 // ✅ GET PROFILE of logged-in user using req.user.id
 exports.getUserProfile = async (req, res) => {
   try {
+    const { id } = req.user;
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID not found in request",
+        data: {},
+      });
+    }
     // Try to find user in the User table
-    let profile = await User.findByPk(req.user.id, {
+    let profile = await User.findByPk(id, {
       attributes: { exclude: ["password"] },
     });
 
     // If not found in User table, check in Client table
     if (!profile) {
-      profile = await Client.findByPk(req.user.id, {
-        attributes: { exclude: ["password"] },
+      profile = await Client.findByPk(id, {
+        attributes: { exclude: ["password", "createdBy"] },
       });
     }
 
-    // If still not found, return 404
     if (!profile) {
       return res.status(404).json({
         success: false,

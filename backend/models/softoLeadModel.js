@@ -1,7 +1,7 @@
 const { sequelize } = require("../config/db");
 const { DataTypes } = require("sequelize");
-const Lead = sequelize.define(
-  "Lead",
+const SoftoLead = sequelize.define(
+  "SoftoLead",
   {
     id: {
       type: DataTypes.UUID,
@@ -59,4 +59,4 @@ const Lead = sequelize.define(
   }
 );
 
-module.exports = Lead;
+module.exports = SoftoLead;

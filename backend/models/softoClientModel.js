@@ -32,7 +32,7 @@ const SoftoClient = sequelize.define(
     createdBy: {
       type: DataTypes.UUID,
       references: {
-        model: "client",
+        model: "clients",
         key: "id",
       },
       allowNull: true,

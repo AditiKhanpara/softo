@@ -3,6 +3,7 @@ const Lead = require("./leadModel");
 const Client = require("./clientModel");
 const rolePermission = require("./rolePermissionModel");
 const SoftoClient = require("./softoClientModel");
+const SoftoLead = require("./softoLeadModel");
 
 // User relationships
 User.hasMany(Lead, { foreignKey: "createdBy" });
@@ -17,6 +18,9 @@ Client.hasMany(SoftoClient, { foreignKey: "createdBy" });
 
 // softoClient relationships
 SoftoClient.belongsTo(Client, { foreignKey: "createdBy" });
+
+// softoLead relationships
+SoftoLead.belongsTo(Client, { foreignKey: "createdBy" });
 
 module.exports = {
   User,

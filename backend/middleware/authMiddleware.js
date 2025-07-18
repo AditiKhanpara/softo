@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { User } = require("../models/");
+const { User, Client } = require("../models/");
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
@@ -17,23 +17,34 @@ const authenticated = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const user = await User.findByPk(decoded.userId, {
-      attributes: ["id", "username", "email"], 
-    });
+    let userOrClient = null;
 
-    if (!user) {
-      return res
-        .status(404)
-        .json({ message: "User not found", data: {}, success: false });
+    if (decoded.userId) {
+      userOrClient = await User.findByPk(decoded.userId, {
+        attributes: ["id", "username", "email"],
+      });
+      if (userOrClient) req.user = userOrClient;
+    } else if (decoded.clientId) {
+      userOrClient = await Client.findByPk(decoded.clientId, {
+        attributes: ["id", "fullName", "email"],
+      });
+      if (userOrClient) req.user = userOrClient;
     }
 
-    req.user = user; 
+    if (!userOrClient) {
+      return res
+        .status(404)
+        .json({ message: "User/Client not found", data: {}, success: false });
+    }
+
     next();
   } catch (err) {
-    console.log('errs :>> ', err);
-    return res
-      .status(403)
-      .json({ message: "Invalid or expired token", data: {}, success: false });
+    console.error("Token Error:", err);
+    return res.status(403).json({
+      message: "Invalid or expired token",
+      data: {},
+      success: false,
+    });
   }
 };
 
