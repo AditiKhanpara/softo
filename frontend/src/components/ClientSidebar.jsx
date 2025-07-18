@@ -1,40 +1,30 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  HomeIcon, 
-  UserGroupIcon, 
-  UserIcon,
-  FolderIcon,
   ChartBarIcon,
+  UserGroupIcon,
+  DocumentTextIcon,
+  CubeIcon,
   CogIcon,
-  ChevronDownIcon,
   Bars3Icon
 } from '@heroicons/react/24/outline';
 
-const Sidebar = () => {
-  const [isModuleOpen, setIsModuleOpen] = useState(false);
+const ClientSidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
 
   const isActive = (path) => location.pathname === path;
 
-  const toggleModule = () => setIsModuleOpen(!isModuleOpen);
   const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
 
   const menuItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: HomeIcon },
-    { name: 'Leads', path: '/leads', icon: UserGroupIcon },
-    { name: 'Clients', path: '/clients', icon: UserIcon },
+    { name: 'Dashboard', path: '/user-dashboard/module/softo-dashboard', icon: ChartBarIcon },
+    { name: 'Leads', path: '/user-dashboard/module/softo-leads', icon: UserGroupIcon },
+    { name: 'Clients', path: '/user-dashboard/module/softo-clients', icon: UserGroupIcon },
+    { name: 'Quotations', path: '/user-dashboard/module/softo-quotations', icon: DocumentTextIcon },
+    { name: 'Packages', path: '/user-dashboard/module/softo-packages', icon: CubeIcon },
+    { name: 'Settings', path: '/user-dashboard/module/softo-settings', icon: CogIcon },
   ];
-
-//   const moduleItems = [
-//     { name: ' Dashboard', path: '/module/softo-dashboard', icon: ChartBarIcon },
-//     { name: ' Leads', path: '/module/softo-leads', icon: UserGroupIcon },
-//     { name: ' Clients', path: '/module/softo-clients', icon: UserIcon },
-//     { name: ' Quotations', path: '/module/softo-quotations', icon: FolderIcon },
-//     { name: ' Packages', path: '/module/softo-packages', icon: FolderIcon },
-//     { name: ' Settings', path: '/module/softo-settings', icon: CogIcon },
-//   ];
 
   return (
     <>
@@ -80,8 +70,6 @@ const Sidebar = () => {
               );
             })}
           </div>
-
-          
         </nav>
       </div>
 
@@ -96,4 +84,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default ClientSidebar; 
