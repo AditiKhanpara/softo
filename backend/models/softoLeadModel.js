@@ -1,8 +1,7 @@
 const { sequelize } = require("../config/db");
 const { DataTypes } = require("sequelize");
-
-const SoftoClient = sequelize.define(
-  "SoftoClient",
+const Lead = sequelize.define(
+  "Lead",
   {
     id: {
       type: DataTypes.UUID,
@@ -25,14 +24,30 @@ const SoftoClient = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    source: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    squareFeet: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     address: {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    remark: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    addToClient: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     createdBy: {
       type: DataTypes.UUID,
       references: {
-        model: "client",
+        model: "clients",
         key: "id",
       },
       allowNull: true,
@@ -40,8 +55,8 @@ const SoftoClient = sequelize.define(
   },
   {
     timestamps: true,
-    tableName: "s_clients",
+    tableName: "s_leads",
   }
 );
 
-module.exports = SoftoClient;
+module.exports = Lead;

@@ -3,10 +3,10 @@ const { Lead } = require("../models");
 // Create Lead
 exports.createLead = async (req, res) => {
   try {
-    const { userId } = req.user;
+    const { id } = req.user;
     const newLead = await Lead.create({
       ...req.body,
-      createdBy: userId,
+      createdBy: id,
     });
     res.status(201).json(newLead);
   } catch (error) {
@@ -17,15 +17,35 @@ exports.createLead = async (req, res) => {
 // Get all leads (optional filter by user/client)
 exports.getAllLeads = async (req, res) => {
   try {
-    const { userId, clientId } = req.user;
+    const { id } = req.user;
+
+    if (!{ id }) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is missing in request",
+        data: {},
+      });
+    }
+
     const leads = await Lead.findAll({
       where: {
-        createdBy: userId,
+        createdBy: { id },
+        addToClient: false,
       },
     });
-    res.status(200).json(leads);
+
+    return res.status(200).json({
+      success: true,
+      message: "Leads fetched successfully",
+      data: leads,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to get leads", error });
+    console.error("Get Leads Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get leads",
+      data: {},
+    });
   }
 };
 

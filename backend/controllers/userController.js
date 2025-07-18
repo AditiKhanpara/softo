@@ -79,17 +79,39 @@ exports.deleteUser = async (req, res) => {
 // ✅ GET PROFILE of logged-in user using req.user.id
 exports.getUserProfile = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id, {
+    // Try to find user in the User table
+    let profile = await User.findByPk(req.user.id, {
       attributes: { exclude: ["password"] },
     });
 
-    if (!user)
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+    // If not found in User table, check in Client table
+    if (!profile) {
+      profile = await Client.findByPk(req.user.id, {
+        attributes: { exclude: ["password"] },
+      });
+    }
 
-    res.status(200).json({ success: true, data: user });
+    // If still not found, return 404
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "User or client not found",
+        data: {},
+      });
+    }
+
+    // Found in either User or Client
+    return res.status(200).json({
+      success: true,
+      message: "Profile fetched successfully",
+      data: profile,
+    });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("Get Profile Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching profile",
+      data: {},
+    });
   }
 };

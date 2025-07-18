@@ -11,5 +11,6 @@ router.get("/getall", authenticated, clientController.getAllClients);
 router.get("/get/:id", authenticated, clientController.getClientById);
 router.put("/update/:id", authenticated, clientController.updateClient);
 router.delete("/delete/:id", authenticated, clientController.deleteClient);
+router.delete("/profile/me", authenticated, clientController.getClientProfile);
 
 module.exports = router;

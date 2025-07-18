@@ -178,3 +178,32 @@ exports.deleteClient = async (req, res) => {
     });
   }
 };
+
+exports.getClientProfile = async (req, res) => {
+  try {
+    const client = await Client.findOne({
+      where: { id: req.user.id }, // Assuming req.user.id is the client's ID
+    });
+
+    if (!client) {
+      return res.status(404).json({
+        message: "Client profile not found",
+        data: {},
+        success: false,
+      });
+    }
+
+    res.status(200).json({
+      message: "Client profile fetched successfully",
+      data: client,
+      success: true,
+    });
+  } catch (error) {
+    console.error("Get Client Profile Error:", error);
+    res.status(500).json({
+      message: "Failed to fetch client profile",
+      data: {},
+      success: false,
+    });
+  }
+};

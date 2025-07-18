@@ -18,7 +18,7 @@ const authenticated = async (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
 
     const user = await User.findByPk(decoded.userId, {
-      attributes: ["id", "username", "email"], // limit info
+      attributes: ["id", "username", "email"], 
     });
 
     if (!user) {
@@ -27,9 +27,10 @@ const authenticated = async (req, res, next) => {
         .json({ message: "User not found", data: {}, success: false });
     }
 
-    req.user = user; // Attach user object to request
+    req.user = user; 
     next();
   } catch (err) {
+    console.log('errs :>> ', err);
     return res
       .status(403)
       .json({ message: "Invalid or expired token", data: {}, success: false });
