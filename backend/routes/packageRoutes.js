@@ -2,12 +2,12 @@ const express = require("express");
 const router = express.Router();
 const packageController = require("../controllers/packageController");
 
-const { authenticate } = require("../middleware/authMiddleware");
+const { authenticated } = require("../middleware/authMiddleware");
 
-router.post("/create", authenticate, packageController.createPackage);
-router.get("/getall", authenticate, packageController.getAllPackages);
-router.get("/get/:id", authenticate, packageController.getPackageById);
-router.put("/update/:id", authenticate, packageController.updatePackage);
-router.delete("/delete/:id", authenticate, packageController.deletePackage);
+router.post("/create", authenticated, packageController.createPackage);
+router.get("/getall", authenticated, packageController.getAllPackages);
+router.get("/get/:id", authenticated, packageController.getPackageById);
+router.put("/update/:id", authenticated, packageController.updatePackage);
+router.delete("/delete/:id", authenticated, packageController.deletePackage);
 
 module.exports = router;
