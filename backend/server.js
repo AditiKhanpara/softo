@@ -29,7 +29,7 @@ app.use((req, res) => {
 app.listen(PORT, "0.0.0.0", async () => {
   try {
     await createDatabase();
-    await sequelize.sync({ alter: false });
+    await sequelize.sync({ alter: true });
     console.log(`✅ Server running on http://localhost:${PORT}`);
   } catch (err) {
     console.error("❌ Failed to connect to DB:", err.message);

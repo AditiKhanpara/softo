@@ -8,6 +8,7 @@ const softoLeadRoutes = require("./softoLeadRoutes");
 const softoClientRoutes = require("./softoClientRoutes");
 const packageRoutes = require("./packageRoutes");
 const packageDetailsRoutes = require("./packageDetailsRoutes");
+const quotationRoutes = require("./quotationRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -17,5 +18,6 @@ router.use("/softo-leads", softoLeadRoutes);
 router.use("/softo-clients", softoClientRoutes);
 router.use("/package", packageRoutes);
 router.use("/package-details", packageDetailsRoutes);
+router.use("/quotation", quotationRoutes);
 
 module.exports = router;

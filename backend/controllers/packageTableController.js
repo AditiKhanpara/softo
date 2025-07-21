@@ -31,7 +31,7 @@ exports.createPackageDetail = async (req, res) => {
 
 // READ all package details (only user's, with included Package info)
 exports.getAllPackageDetails = async (req, res) => {
-  const { packageId } = req.query; // ← Use query, not params
+  const { packageId } = req.query; 
 
   try {
     const whereClause = {
@@ -39,8 +39,8 @@ exports.getAllPackageDetails = async (req, res) => {
     };
 
     if (packageId) {
-      whereClause.packageId = packageId;
-    } else {
+      whereClause.packageId = packageId; 
+    }else {
       return res
         .status(400)
         .json({ success: false, message: "Package ID is required" });

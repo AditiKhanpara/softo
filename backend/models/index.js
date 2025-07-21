@@ -64,6 +64,11 @@ Client.hasMany(PackageTable, {
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
+Client.hasMany(Quotation, {
+  foreignKey: { name: "clientId" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
 // softoClient relationships
 SoftoClient.belongsTo(Client, {
@@ -97,6 +102,11 @@ Package.hasMany(PackageTableForm, {
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
+Package.hasMany(Quotation, {
+  foreignKey: { name: "packageId" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
 // packageTable
 PackageTable.belongsTo(Package, {
@@ -105,6 +115,23 @@ PackageTable.belongsTo(Package, {
   onUpdate: "CASCADE",
 });
 PackageTable.belongsTo(Client, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+
+// quotation relationships
+Quotation.belongsTo(SoftoClient, {
+  foreignKey: { name: "softoClientId" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+Quotation.belongsTo(Package, {
+  foreignKey: { name: "packageId" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+Quotation.belongsTo(Client, {
   foreignKey: { name: "createdBy" },
   onDelete: "SET NULL",
   onUpdate: "CASCADE",

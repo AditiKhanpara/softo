@@ -22,9 +22,18 @@ const PackageTable = sequelize.define(
       allowNull: false,
     },
     spaceData: {
-      type: DataTypes.JSON,
+      type: DataTypes.JSON, // or DataTypes.TEXT if stored as stringified JSON
       allowNull: false,
+      get() {
+        const rawValue = this.getDataValue("spaceData");
+        try {
+          return typeof rawValue === "string" ? JSON.parse(rawValue) : rawValue;
+        } catch (e) {
+          return rawValue;
+        }
+      },
     },
+
     spaceType: {
       type: DataTypes.ENUM("squareNet", "description"),
       allowNull: false,
