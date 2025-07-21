@@ -31,12 +31,26 @@ exports.createPackageDetail = async (req, res) => {
 
 // READ all package details (only user's, with included Package info)
 exports.getAllPackageDetails = async (req, res) => {
-  const { packageId } = req.params;
+  const { packageId } = req.query; // ← Use query, not params
+
   try {
+    const whereClause = {
+      createdBy: req.user.id,
+    };
+
+    if (packageId) {
+      whereClause.packageId = packageId;
+    } else {
+      return res
+        .status(400)
+        .json({ success: false, message: "Package ID is required" });
+    }
+
     const details = await PackageTable.findAll({
-      where: { createdBy: req.user.id, packageId: packageId },
+      where: whereClause,
       include: [{ model: Package }],
     });
+
     return res.status(200).json({ success: true, data: details });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
