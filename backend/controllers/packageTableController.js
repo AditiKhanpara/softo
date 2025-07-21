@@ -8,7 +8,7 @@ exports.createPackageDetail = async (req, res) => {
 
     // Optional: validate packageId belongs to this user
     const pkg = await Package.findOne({
-      where: { id: packageId, createdBy },
+      where: { packageId, createdBy },
     });
 
     if (!pkg) {
@@ -31,10 +31,10 @@ exports.createPackageDetail = async (req, res) => {
 
 // READ all package details (only user's, with included Package info)
 exports.getAllPackageDetails = async (req, res) => {
-  const { id } = req.query.id;
+  const { packageId } = req.body;
   try {
     const details = await PackageTable.findAll({
-      where: { createdBy: req.user.id, packageId: id },
+      where: { createdBy: req.user.id, packageId: packageId },
       include: [{ model: Package }],
     });
     return res.status(200).json({ success: true, data: details });
@@ -45,7 +45,7 @@ exports.getAllPackageDetails = async (req, res) => {
 
 // READ a single package detail by ID (only if owned, with Package)
 exports.getPackageDetailById = async (req, res) => {
-  const { id } = req.query.id;
+  const { id } = req.params.id;
   try {
     const detail = await PackageTable.findOne({
       where: {
