@@ -2,15 +2,12 @@ const express = require("express");
 const router = express.Router();
 const packageController = require("../controllers/packageController");
 
-// Middleware to protect routes
-const authenticate = require("../middleware/auth");
+const { authenticate } = require("../middleware/authMiddleware");
 
-router.use(authenticate); // all routes require login
-
-router.post("/create", packageController.createPackage);
-router.get("/getall", packageController.getAllPackages);
-router.get("/get/:id", packageController.getPackageById);
-router.put("/update/:id", packageController.updatePackage);
-router.delete("/delete/:id", packageController.deletePackage);
+router.post("/create", authenticate, packageController.createPackage);
+router.get("/getall", authenticate, packageController.getAllPackages);
+router.get("/get/:id", authenticate, packageController.getPackageById);
+router.put("/update/:id", authenticate, packageController.updatePackage);
+router.delete("/delete/:id", authenticate, packageController.deletePackage);
 
 module.exports = router;
