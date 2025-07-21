@@ -8,7 +8,7 @@ exports.createPackageDetail = async (req, res) => {
 
     // Optional: validate packageId belongs to this user
     const pkg = await Package.findOne({
-      where: { packageId, createdBy },
+      where: { id: packageId, createdBy },
     });
 
     if (!pkg) {
