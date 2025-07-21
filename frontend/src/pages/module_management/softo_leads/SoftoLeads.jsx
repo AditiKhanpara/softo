@@ -80,26 +80,26 @@ const SoftoLeads = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Leads</h2>
-              <p className="text-gray-600">
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className="flex justify-between items-center">
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-gray-900 mb-1">Leads</h2>
+              <p className="text-sm text-gray-600 mb-3">
                 Manage your lead information and track their status.
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 ml-4">
               <button
                 onClick={fetchLeads}
                 disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 text-sm"
               >
                 <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
               <Link
                 to="/user-dashboard/module/softo-leads/add"
-                className="flex items-center gap-2 px-4 py-2 bg-[#800000]/90 hover:bg-[#800000] text-white rounded-lg transition-colors duration-200"
+                className="flex items-center gap-2 px-3 py-2 bg-[#800000]/90 hover:bg-[#800000] text-white rounded-lg transition-colors duration-200 text-sm"
               >
                 <PlusIcon className="w-4 h-4" />
                 Add Lead
@@ -125,48 +125,41 @@ const SoftoLeads = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Leads</h2>
-            <p className="text-gray-600">
+      <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="flex justify-between items-center">
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-gray-900 mb-1">Leads</h2>
+            <p className="text-sm text-gray-600 mb-3">
               Manage your lead information and track their status.
             </p>
+            {/* Search in header */}
+            <div className="relative max-w-md">
+              <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search leads by name, email, city, or source..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200 text-sm"
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 ml-4">
             <button
               onClick={fetchLeads}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 text-sm"
             >
               <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </button>
             <Link
               to="/user-dashboard/module/softo-leads/add"
-              className="flex items-center gap-2 px-4 py-2 bg-[#800000]/90 hover:bg-[#800000] text-white rounded-lg transition-colors duration-200"
+              className="flex items-center gap-2 px-3 py-2 bg-[#800000]/90 hover:bg-[#800000] text-white rounded-lg transition-colors duration-200 text-sm"
             >
               <PlusIcon className="w-4 h-4" />
               Add Lead
             </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search leads by name, email, city, or source..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200"
-              />
-            </div>
           </div>
         </div>
       </div>

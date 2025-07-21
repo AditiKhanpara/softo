@@ -9,7 +9,10 @@ import {
   ChevronDownIcon,
   DocumentDuplicateIcon,
   ArchiveBoxIcon,
-  CogIcon
+  CogIcon,
+  CheckIcon,
+  ArrowUpIcon,
+  ArrowDownIcon
 } from '@heroicons/react/24/outline';
 import softoPackagesService from '../../../services/softoPackagesService';
 
@@ -24,6 +27,8 @@ const PackageDetails = () => {
   const [editingSectionId, setEditingSectionId] = useState(null);
   const [editingSectionName, setEditingSectionName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [editingWorkItems, setEditingWorkItems] = useState({});
+  const [autoSaveTimer, setAutoSaveTimer] = useState(null);
 
   // Fetch package data
   useEffect(() => {
@@ -36,40 +41,13 @@ const PackageDetails = () => {
           setPackageData(data);
           setSections(data.sections || []);
         } else {
-          // If no data found, create mock data for demonstration
-          const mockPackageData = {
-            id: id,
-            name: 'Kitchen Renovation',
-            sections: [
-              {
-                id: '1',
-                name: 'CABINETS',
-                type: 'squareNet',
-                workItems: [
-                  { id: '1', srNo: 1, item: 'MAIN PLATFORM (SS BASKET)', nos: 1, width: 9.25, length: 2.50, sqFt: 23.13, pricePerSqFt: 1500, total: 34687.50 },
-                  { id: '2', srNo: 2, item: 'CHIMNEY CABINET', nos: 1, width: 9.25, length: 4.00, sqFt: 37.00, pricePerSqFt: 1200, total: 44400.00 },
-                  { id: '3', srNo: 3, item: 'SERVICE PLATFORM', nos: 1, width: 5.50, length: 2.50, sqFt: 13.75, pricePerSqFt: 1300, total: 17875.00 },
-                  { id: '4', srNo: 4, item: 'SERVICE PLATFORM(OVERHEAD)', nos: 1, width: 8.00, length: 5.00, sqFt: 40.00, pricePerSqFt: 1200, total: 48000.00 }
-                ]
-              },
-              {
-                id: '2',
-                name: 'ACCESSORIES',
-                type: 'description',
-                workItems: [
-                  { id: '5', srNo: 1, carpentryWork: 'SOFA', description: 'per Meter) with Ashan patta & sofa cover with 2 cushion size 12*18', size: '', price: 3500 },
-                  { id: '6', srNo: 2, carpentryWork: 'RECEPTION TABLE', description: 'Ply with Laminate finish', size: '', price: 7500 },
-                  { id: '7', srNo: 3, carpentryWork: 'CHAIR', description: 'Regular staff chair', size: '', price: 3500 }
-                ]
-              }
-            ]
-          };
-          setPackageData(mockPackageData);
-          setSections(mockPackageData.sections);
+          // Package not found - redirect to packages list
+          alert('Package not found');
+          navigate('/softo-packages');
         }
       } catch (error) {
         console.error('Error fetching package data:', error);
-        // Show error or redirect
+        alert('Failed to load package. Please try again.');
         navigate('/softo-packages');
       } finally {
         setLoading(false);
@@ -81,19 +59,33 @@ const PackageDetails = () => {
     }
   }, [id, navigate]);
 
-  // Save sections to service when they change
+  // Auto-save functionality
   useEffect(() => {
-    if (packageData && sections.length > 0) {
-      const saveSections = async () => {
-        try {
-          await softoPackagesService.updatePackageSections(packageData.id, sections);
-        } catch (error) {
-          console.error('Error saving sections:', error);
-        }
-      };
-      saveSections();
+    if (autoSaveTimer) {
+      clearTimeout(autoSaveTimer);
     }
+
+    const timer = setTimeout(() => {
+      if (packageData && sections.length > 0) {
+        saveSectionsToService();
+      }
+    }, 2000); // Auto-save after 2 seconds of inactivity
+
+    setAutoSaveTimer(timer);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [sections, packageData]);
+
+  const saveSectionsToService = async () => {
+    try {
+      await softoPackagesService.updatePackageSections(packageData.id, sections);
+      console.log('Auto-saved successfully');
+    } catch (error) {
+      console.error('Error auto-saving sections:', error);
+    }
+  };
 
   const getTypeLabel = (type) => {
     switch (type) {
@@ -118,6 +110,7 @@ const PackageDetails = () => {
       id: Date.now().toString(),
       name: newSectionName,
       type: newSectionType,
+      order: sections.length + 1,
       workItems: []
     };
 
@@ -156,13 +149,45 @@ const PackageDetails = () => {
     }
   };
 
+  // Space reordering functions
+  const moveSectionUp = (sectionId) => {
+    setSections(prev => {
+      const newSections = [...prev];
+      const currentIndex = newSections.findIndex(s => s.id === sectionId);
+      if (currentIndex > 0) {
+        [newSections[currentIndex], newSections[currentIndex - 1]] = [newSections[currentIndex - 1], newSections[currentIndex]];
+        // Update order numbers
+        newSections.forEach((section, index) => {
+          section.order = index + 1;
+        });
+      }
+      return newSections;
+    });
+  };
+
+  const moveSectionDown = (sectionId) => {
+    setSections(prev => {
+      const newSections = [...prev];
+      const currentIndex = newSections.findIndex(s => s.id === sectionId);
+      if (currentIndex < newSections.length - 1) {
+        [newSections[currentIndex], newSections[currentIndex + 1]] = [newSections[currentIndex + 1], newSections[currentIndex]];
+        // Update order numbers
+        newSections.forEach((section, index) => {
+          section.order = index + 1;
+        });
+      }
+      return newSections;
+    });
+  };
+
   const handleAddWorkItem = (sectionId) => {
     const section = sections.find(s => s.id === sectionId);
     if (!section) return;
 
     const newWorkItem = {
       id: Date.now().toString(),
-      srNo: section.workItems.length + 1
+      srNo: section.workItems.length + 1,
+      order: section.workItems.length + 1
     };
 
     if (section.type === 'squareNet') {
@@ -199,7 +224,7 @@ const PackageDetails = () => {
               ...section, 
               workItems: section.workItems
                 .filter(item => item.id !== itemId)
-                .map((item, index) => ({ ...item, srNo: index + 1 }))
+                .map((item, index) => ({ ...item, srNo: index + 1, order: index + 1 }))
             }
           : section
       ));
@@ -233,6 +258,65 @@ const PackageDetails = () => {
           }
         : section
     ));
+
+    // Mark this work item as being edited
+    setEditingWorkItems(prev => ({
+      ...prev,
+      [itemId]: true
+    }));
+  };
+
+  const handleSaveWorkItem = async (sectionId, itemId) => {
+    try {
+      await softoPackagesService.updatePackageSections(packageData.id, sections);
+      setEditingWorkItems(prev => ({
+        ...prev,
+        [itemId]: false
+      }));
+      console.log('Work item saved successfully');
+    } catch (error) {
+      console.error('Error saving work item:', error);
+      alert('Failed to save work item. Please try again.');
+    }
+  };
+
+  // Work item reordering functions
+  const moveWorkItemUp = (sectionId, itemId) => {
+    setSections(prev => prev.map(section => {
+      if (section.id === sectionId) {
+        const newWorkItems = [...section.workItems];
+        const currentIndex = newWorkItems.findIndex(item => item.id === itemId);
+        if (currentIndex > 0) {
+          [newWorkItems[currentIndex], newWorkItems[currentIndex - 1]] = [newWorkItems[currentIndex - 1], newWorkItems[currentIndex]];
+          // Update srNo and order
+          newWorkItems.forEach((item, index) => {
+            item.srNo = index + 1;
+            item.order = index + 1;
+          });
+        }
+        return { ...section, workItems: newWorkItems };
+      }
+      return section;
+    }));
+  };
+
+  const moveWorkItemDown = (sectionId, itemId) => {
+    setSections(prev => prev.map(section => {
+      if (section.id === sectionId) {
+        const newWorkItems = [...section.workItems];
+        const currentIndex = newWorkItems.findIndex(item => item.id === itemId);
+        if (currentIndex < newWorkItems.length - 1) {
+          [newWorkItems[currentIndex], newWorkItems[currentIndex + 1]] = [newWorkItems[currentIndex + 1], newWorkItems[currentIndex]];
+          // Update srNo and order
+          newWorkItems.forEach((item, index) => {
+            item.srNo = index + 1;
+            item.order = index + 1;
+          });
+        }
+        return { ...section, workItems: newWorkItems };
+      }
+      return section;
+    }));
   };
 
   const calculateSectionTotal = (workItems, type) => {
@@ -248,6 +332,9 @@ const PackageDetails = () => {
       return sum + Number(calculateSectionTotal(section.workItems, section.type));
     }, 0).toFixed(2);
   };
+
+  // Sort sections by order
+  const sortedSections = [...sections].sort((a, b) => a.order - b.order);
 
   if (loading) {
     return (
@@ -325,224 +412,302 @@ const PackageDetails = () => {
       </div>
 
       {/* Spaces */}
-      {sections.map((section, sectionIndex) => (
-        <div key={section.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
-          {/* Space Header */}
-          <div className="px-4 py-3 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                {editingSectionId === section.id ? (
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={editingSectionName}
-                      onChange={(e) => setEditingSectionName(e.target.value)}
-                      className="px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-sm"
-                    />
-                    <button
-                      onClick={handleSaveSectionEdit}
-                      className="text-green-600 hover:text-green-800 text-sm"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setEditingSectionId(null)}
-                      className="text-gray-600 hover:text-gray-800 text-sm"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <h3 className="text-base font-medium text-gray-900">{section.name}</h3>
-                )}
-                <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
-                  {getTypeLabel(section.type)}
-                </span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <button
-                  onClick={() => handleEditSection(section.id)}
-                  className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded"
-                >
-                  <PencilIcon className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => handleDeleteSection(section.id)}
-                  className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
-                >
-                  <TrashIcon className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => handleAddWorkItem(section.id)}
-                  className="bg-[#800000]/90 hover:bg-[#800000] text-white px-2 py-1 rounded text-xs transition-colors duration-200"
-                >
-                  Add Work Item
-                </button>
+      {sortedSections.map((section, sectionIndex) => {
+        // Sort work items by order
+        const sortedWorkItems = [...section.workItems].sort((a, b) => a.order - b.order);
+        
+        return (
+          <div key={section.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
+            {/* Space Header */}
+            <div className="px-4 py-3 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  {editingSectionId === section.id ? (
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={editingSectionName}
+                        onChange={(e) => setEditingSectionName(e.target.value)}
+                        className="px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-sm"
+                      />
+                      <button
+                        onClick={handleSaveSectionEdit}
+                        className="text-green-600 hover:text-green-800 text-sm"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingSectionId(null)}
+                        className="text-gray-600 hover:text-gray-800 text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <h3 className="text-base font-medium text-gray-900">{section.name}</h3>
+                  )}
+                  <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                    {getTypeLabel(section.type)}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  {/* Space reordering buttons */}
+                  <button
+                    onClick={() => moveSectionUp(section.id)}
+                    disabled={sectionIndex === 0}
+                    className={`p-1 rounded ${sectionIndex === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'}`}
+                  >
+                    <ArrowUpIcon className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => moveSectionDown(section.id)}
+                    disabled={sectionIndex === sortedSections.length - 1}
+                    className={`p-1 rounded ${sectionIndex === sortedSections.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'}`}
+                  >
+                    <ArrowDownIcon className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => handleEditSection(section.id)}
+                    className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded"
+                  >
+                    <PencilIcon className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteSection(section.id)}
+                    className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+                  >
+                    <TrashIcon className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => handleAddWorkItem(section.id)}
+                    className="bg-[#800000]/90 hover:bg-[#800000] text-white px-2 py-1 rounded text-xs transition-colors duration-200"
+                  >
+                    Add Work
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Space Table */}
-          <div className="overflow-x-auto">
-            {section.type === 'squareNet' ? (
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Sr No</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Item</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Nos</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Width</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Length</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Sq. Ft.</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Rs./sFt.</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Total</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {section.workItems.map((item, index) => (
-                    <tr key={item.id} className="border-b border-gray-100">
-                      <td className="px-3 py-2 text-xs text-gray-900">{item.srNo}</td>
-                      <td className="px-3 py-2">
-                        <input
-                          type="text"
-                          value={item.item}
-                          onChange={(e) => handleWorkItemChange(section.id, item.id, 'item', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <input
-                          type="number"
-                          value={item.nos}
-                          onChange={(e) => handleWorkItemChange(section.id, item.id, 'nos', e.target.value)}
-                          className="w-16 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <input
-                          type="number"
-                          value={item.width}
-                          onChange={(e) => handleWorkItemChange(section.id, item.id, 'width', e.target.value)}
-                          className="w-16 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <input
-                          type="number"
-                          value={item.length}
-                          onChange={(e) => handleWorkItemChange(section.id, item.id, 'length', e.target.value)}
-                          className="w-16 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
-                        />
-                      </td>
-                      <td className="px-3 py-2 text-xs text-gray-900">{item.sqFt}</td>
-                      <td className="px-3 py-2">
-                        <input
-                          type="number"
-                          value={item.pricePerSqFt}
-                          onChange={(e) => handleWorkItemChange(section.id, item.id, 'pricePerSqFt', e.target.value)}
-                          className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
-                        />
-                      </td>
-                      <td className="px-3 py-2 text-xs font-medium text-gray-900">{item.total}</td>
-                      <td className="px-3 py-2">
-                        <button
-                          onClick={() => handleDeleteWorkItem(section.id, item.id)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <TrashIcon className="w-3 h-3" />
-                        </button>
-                      </td>
+            {/* Space Table */}
+            <div className="overflow-x-auto">
+              {section.type === 'squareNet' ? (
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Order</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Sr No</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Item</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Nos</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Width</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Length</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Sq. Ft.</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Rs./sFt.</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Total</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-gray-50">
-                    <td colSpan="7" className="px-3 py-2 text-xs font-medium text-gray-900 text-right">
-                      Space Total:
-                    </td>
-                    <td className="px-3 py-2 text-xs font-bold text-[#800000]">
-                      ₹{calculateSectionTotal(section.workItems, section.type)}
-                    </td>
-                    <td></td>
-                  </tr>
-                </tfoot>
-              </table>
-            ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Sr No</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Carpentry Work</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Description</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Size</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Price</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {section.workItems.map((item, index) => (
-                    <tr key={item.id} className="border-b border-gray-100">
-                      <td className="px-3 py-2 text-xs text-gray-900">{item.srNo}</td>
-                      <td className="px-3 py-2">
-                        <input
-                          type="text"
-                          value={item.carpentryWork}
-                          onChange={(e) => handleWorkItemChange(section.id, item.id, 'carpentryWork', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
-                        />
+                  </thead>
+                  <tbody>
+                    {sortedWorkItems.map((item, index) => (
+                      <tr key={item.id} className="border-b border-gray-100">
+                        <td className="px-3 py-2 text-xs text-gray-900">{item.order}</td>
+                        <td className="px-3 py-2 text-xs text-gray-900">{item.srNo}</td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="text"
+                            value={item.item}
+                            onChange={(e) => handleWorkItemChange(section.id, item.id, 'item', e.target.value)}
+                            className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="number"
+                            value={item.nos}
+                            onChange={(e) => handleWorkItemChange(section.id, item.id, 'nos', e.target.value)}
+                            className="w-16 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="number"
+                            value={item.width}
+                            onChange={(e) => handleWorkItemChange(section.id, item.id, 'width', e.target.value)}
+                            className="w-16 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="number"
+                            value={item.length}
+                            onChange={(e) => handleWorkItemChange(section.id, item.id, 'length', e.target.value)}
+                            className="w-16 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
+                          />
+                        </td>
+                        <td className="px-3 py-2 text-xs text-gray-900">{item.sqFt}</td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="number"
+                            value={item.pricePerSqFt}
+                            onChange={(e) => handleWorkItemChange(section.id, item.id, 'pricePerSqFt', e.target.value)}
+                            className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
+                          />
+                        </td>
+                        <td className="px-3 py-2 text-xs font-medium text-gray-900">{item.total}</td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center space-x-1">
+                            {/* Work item reordering */}
+                            <button
+                              onClick={() => moveWorkItemUp(section.id, item.id)}
+                              disabled={index === 0}
+                              className={`p-1 rounded ${index === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:text-gray-800'}`}
+                            >
+                              <ArrowUpIcon className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => moveWorkItemDown(section.id, item.id)}
+                              disabled={index === sortedWorkItems.length - 1}
+                              className={`p-1 rounded ${index === sortedWorkItems.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:text-gray-800'}`}
+                            >
+                              <ArrowDownIcon className="w-3 h-3" />
+                            </button>
+                            {/* Save button */}
+                            {editingWorkItems[item.id] && (
+                              <button
+                                onClick={() => handleSaveWorkItem(section.id, item.id)}
+                                className="p-1 text-green-600 hover:text-green-800"
+                                title="Save changes"
+                              >
+                                <CheckIcon className="w-3 h-3" />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleDeleteWorkItem(section.id, item.id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <TrashIcon className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-gray-50">
+                      <td colSpan="8" className="px-3 py-2 text-xs font-medium text-gray-900 text-right">
+                        Space Total:
                       </td>
-                      <td className="px-3 py-2">
-                        <textarea
-                          value={item.description}
-                          onChange={(e) => handleWorkItemChange(section.id, item.id, 'description', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs resize-none"
-                          rows="2"
-                        />
+                      <td className="px-3 py-2 text-xs font-bold text-[#800000]">
+                        ₹{calculateSectionTotal(section.workItems, section.type)}
                       </td>
-                      <td className="px-3 py-2">
-                        <input
-                          type="text"
-                          value={item.size}
-                          onChange={(e) => handleWorkItemChange(section.id, item.id, 'size', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <input
-                          type="number"
-                          value={item.price}
-                          onChange={(e) => handleWorkItemChange(section.id, item.id, 'price', e.target.value)}
-                          className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <button
-                          onClick={() => handleDeleteWorkItem(section.id, item.id)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <TrashIcon className="w-3 h-3" />
-                        </button>
-                      </td>
+                      <td></td>
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-gray-50">
-                    <td colSpan="4" className="px-3 py-2 text-xs font-medium text-gray-900 text-right">
-                      Space Total:
-                    </td>
-                    <td className="px-3 py-2 text-xs font-bold text-[#800000]">
-                      ₹{calculateSectionTotal(section.workItems, section.type)}
-                    </td>
-                    <td></td>
-                  </tr>
-                </tfoot>
-              </table>
-            )}
+                  </tfoot>
+                </table>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Order</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Sr No</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Carpentry Work</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Description</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Size</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Price</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-900">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedWorkItems.map((item, index) => (
+                      <tr key={item.id} className="border-b border-gray-100">
+                        <td className="px-3 py-2 text-xs text-gray-900">{item.order}</td>
+                        <td className="px-3 py-2 text-xs text-gray-900">{item.srNo}</td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="text"
+                            value={item.carpentryWork}
+                            onChange={(e) => handleWorkItemChange(section.id, item.id, 'carpentryWork', e.target.value)}
+                            className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <textarea
+                            value={item.description}
+                            onChange={(e) => handleWorkItemChange(section.id, item.id, 'description', e.target.value)}
+                            className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs resize-none"
+                            rows="2"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="text"
+                            value={item.size}
+                            onChange={(e) => handleWorkItemChange(section.id, item.id, 'size', e.target.value)}
+                            className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="number"
+                            value={item.price}
+                            onChange={(e) => handleWorkItemChange(section.id, item.id, 'price', e.target.value)}
+                            className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] text-xs"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center space-x-1">
+                            {/* Work item reordering */}
+                            <button
+                              onClick={() => moveWorkItemUp(section.id, item.id)}
+                              disabled={index === 0}
+                              className={`p-1 rounded ${index === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:text-gray-800'}`}
+                            >
+                              <ArrowUpIcon className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => moveWorkItemDown(section.id, item.id)}
+                              disabled={index === sortedWorkItems.length - 1}
+                              className={`p-1 rounded ${index === sortedWorkItems.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:text-gray-800'}`}
+                            >
+                              <ArrowDownIcon className="w-3 h-3" />
+                            </button>
+                            {/* Save button */}
+                            {editingWorkItems[item.id] && (
+                              <button
+                                onClick={() => handleSaveWorkItem(section.id, item.id)}
+                                className="p-1 text-green-600 hover:text-green-800"
+                                title="Save changes"
+                              >
+                                <CheckIcon className="w-3 h-3" />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleDeleteWorkItem(section.id, item.id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <TrashIcon className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-gray-50">
+                      <td colSpan="5" className="px-3 py-2 text-xs font-medium text-gray-900 text-right">
+                        Space Total:
+                      </td>
+                      <td className="px-3 py-2 text-xs font-bold text-[#800000]">
+                        ₹{calculateSectionTotal(section.workItems, section.type)}
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Package Total */}
       {sections.length > 0 && (

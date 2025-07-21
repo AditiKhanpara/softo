@@ -7,7 +7,9 @@ import {
   TrashIcon,
   EllipsisVerticalIcon,
   ArchiveBoxIcon,
-  StarIcon
+  StarIcon,
+  CheckIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import softoPackagesService from '../../../services/softoPackagesService';
@@ -19,6 +21,8 @@ const SoftoPackages = () => {
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPackageName, setNewPackageName] = useState('');
+  const [editingPackageId, setEditingPackageId] = useState(null);
+  const [editingPackageName, setEditingPackageName] = useState('');
 
   // Fetch packages on component mount
   useEffect(() => {
@@ -29,59 +33,30 @@ const SoftoPackages = () => {
     try {
       setLoading(true);
       const data = await softoPackagesService.getAllPackages();
-      
-      // If no packages exist, create some mock data for demonstration
-      if (data.length === 0) {
-        const mockPackages = [
-          {
-            id: '1',
-            name: 'Kitchen Renovation',
-            sections: [
-              { id: '1', name: 'CABINETS', type: 'squareNet', itemCount: 4 },
-              { id: '2', name: 'ACCESSORIES', type: 'description', itemCount: 3 }
-            ],
-            totalItems: 7,
-            createdAt: '2024-01-15',
-            lastModified: '2024-01-20'
-          },
-          {
-            id: '2',
-            name: 'Bathroom Project',
-            sections: [
-              { id: '3', name: 'BATHROOM 1', type: 'description', itemCount: 12 }
-            ],
-            totalItems: 12,
-            createdAt: '2024-01-10',
-            lastModified: '2024-01-18'
-          },
-          {
-            id: '3',
-            name: 'Living Room Setup',
-            sections: [
-              { id: '4', name: 'FURNITURE', type: 'description', itemCount: 6 },
-              { id: '5', name: 'ELECTRONICS', type: 'squareNet', itemCount: 2 }
-            ],
-            totalItems: 8,
-            createdAt: '2024-01-05',
-            lastModified: '2024-01-12'
-          }
-        ];
-        
-        // Save mock data to service
-        for (const pkg of mockPackages) {
-          await softoPackagesService.createPackage(pkg);
-        }
-        
-        setPackages(mockPackages);
-        setFilteredPackages(mockPackages);
-      } else {
-        setPackages(data);
-        setFilteredPackages(data);
-      }
+      setPackages(data);
+      setFilteredPackages(data);
     } catch (error) {
       console.error('Error fetching packages:', error);
+      
+      // Handle authentication errors
+      if (error.message.includes('Authentication')) {
+        alert('Please log in to access packages.');
+        // You might want to redirect to login page here
+        return;
+      }
+      
+      setPackages([]);
+      setFilteredPackages([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Function to clear localStorage data (for testing/cleanup)
+  const clearStorageData = () => {
+    if (window.confirm('This will clear all local package data. Are you sure?')) {
+      softoPackagesService.clearAllStorageData();
+      fetchPackages(); // Refresh the list
     }
   };
 
@@ -96,7 +71,7 @@ const SoftoPackages = () => {
     if (!name) return { 
       bg: 'linear-gradient(135deg, #607D8B 0%, #455A64 100%)', 
       text: '#fff',
-      icon: <ArchiveBoxIcon className="w-6 h-6" />
+      icon: <ArchiveBoxIcon className="w-4 h-4" />
     };
     
     const lower = name.toLowerCase();
@@ -104,25 +79,25 @@ const SoftoPackages = () => {
     if (lower.includes('kitchen')) return { 
       bg: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)', 
       text: '#fff',
-      icon: <ArchiveBoxIcon className="w-6 h-6" />
+      icon: <ArchiveBoxIcon className="w-4 h-4" />
     };
     
     if (lower.includes('bathroom')) return { 
       bg: 'linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)', 
       text: '#fff',
-      icon: <ArchiveBoxIcon className="w-6 h-6" />
+      icon: <ArchiveBoxIcon className="w-4 h-4" />
     };
     
     if (lower.includes('living')) return { 
       bg: 'linear-gradient(135deg, #A8E6CF 0%, #7FCDCD 100%)', 
       text: '#fff',
-      icon: <ArchiveBoxIcon className="w-6 h-6" />
+      icon: <ArchiveBoxIcon className="w-4 h-4" />
     };
     
     return {
       bg: 'linear-gradient(135deg, #607D8B 0%, #455A64 100%)',
       text: '#fff',
-      icon: <ArchiveBoxIcon className="w-6 h-6" />
+      icon: <ArchiveBoxIcon className="w-4 h-4" />
     };
   };
 
@@ -140,17 +115,11 @@ const SoftoPackages = () => {
       return;
     }
 
-    const newPackage = {
-      id: Date.now().toString(), // This will be overwritten by the service
-      name: newPackageName,
-      sections: [],
-      totalItems: 0,
-      createdAt: new Date().toISOString().split('T')[0],
-      lastModified: new Date().toISOString().split('T')[0]
-    };
-
     try {
-      await softoPackagesService.createPackage(newPackage);
+      const newPackage = await softoPackagesService.createPackage({
+        name: newPackageName
+      });
+      
       setPackages(prev => [newPackage, ...prev]);
       setShowCreateModal(false);
       setNewPackageName('');
@@ -172,81 +141,159 @@ const SoftoPackages = () => {
     }
   };
 
+  const handleEditPackage = (packageId, currentName) => {
+    setEditingPackageId(packageId);
+    setEditingPackageName(currentName);
+  };
+
+  const handleSavePackageEdit = async () => {
+    if (!editingPackageName.trim()) {
+      alert('Please enter a package name');
+      return;
+    }
+
+    try {
+      const updatedPackage = await softoPackagesService.updatePackage(editingPackageId, {
+        name: editingPackageName,
+        lastModified: new Date().toISOString().split('T')[0]
+      });
+
+      setPackages(prev => prev.map(pkg => 
+        pkg.id === editingPackageId 
+          ? { ...pkg, name: editingPackageName, lastModified: new Date().toISOString().split('T')[0] }
+          : pkg
+      ));
+
+      setEditingPackageId(null);
+      setEditingPackageName('');
+    } catch (error) {
+      console.error('Error updating package:', error);
+      alert('Failed to update package name. Please try again.');
+    }
+  };
+
+  const handleCancelPackageEdit = () => {
+    setEditingPackageId(null);
+    setEditingPackageName('');
+  };
+
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex justify-between items-center">
-          <div>
+          <div className="flex-1">
             <h2 className="text-xl font-bold text-gray-900 mb-1">SOFTO Packages</h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 mb-3">
               Manage your project packages and quotation details.
             </p>
+            {/* Search in header */}
+            <div className="relative max-w-md">
+              <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search packages..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200 text-sm"
+              />
+            </div>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-[#800000]/90 hover:bg-[#800000] text-white px-3 py-2 rounded-lg transition-colors duration-200 shadow-sm flex items-center text-sm"
-          >
-            <PlusIcon className="w-4 h-4 mr-1" />
-            Add New Package
-          </button>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <div className="flex items-center space-x-4">
-          <div className="flex-1 relative">
-            <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search packages..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200 text-sm"
-            />
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={clearStorageData}
+              className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm"
+              title="Clear localStorage data (for testing)"
+            >
+              Clear Data
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-[#800000]/90 hover:bg-[#800000] text-white px-3 py-2 rounded-lg transition-colors duration-200 shadow-sm flex items-center text-sm"
+            >
+              <PlusIcon className="w-4 h-4 mr-1" />
+              Add New Package
+            </button>
           </div>
         </div>
       </div>
 
       {/* Packages Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {filteredPackages.map(pkg => {
           const { bg, text, icon } = getPackageColor(pkg.name);
           
           return (
             <div
               key={pkg.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 overflow-hidden"
+              className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 overflow-hidden group"
             >
               {/* Package Header */}
               <div 
-                className="p-3 text-white"
+                className="p-2 text-white"
                 style={{ background: bg }}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
                       {icon}
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-base">{pkg.name}</h3>
+                    <div className="flex-1">
+                      {editingPackageId === pkg.id ? (
+                        <div className="flex items-center space-x-1">
+                          <input
+                            type="text"
+                            value={editingPackageName}
+                            onChange={(e) => setEditingPackageName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSavePackageEdit();
+                              } else if (e.key === 'Escape') {
+                                handleCancelPackageEdit();
+                              }
+                            }}
+                            className="bg-white/20 text-white placeholder-white/70 px-2 py-1 rounded text-sm border border-white/30 focus:outline-none focus:border-white/50"
+                            placeholder="Enter package name"
+                            autoFocus
+                          />
+                          <button
+                            onClick={handleSavePackageEdit}
+                            className="p-1 text-green-300 hover:text-green-100 hover:bg-white/10 rounded"
+                            title="Save"
+                          >
+                            <CheckIcon className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={handleCancelPackageEdit}
+                            className="p-1 text-red-300 hover:text-red-100 hover:bg-white/10 rounded"
+                            title="Cancel"
+                          >
+                            <XMarkIcon className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-1">
+                          <h3 className="font-semibold text-sm">{pkg.name}</h3>
+                          <button
+                            onClick={() => handleEditPackage(pkg.id, pkg.name)}
+                            className="p-1 text-white/70 hover:text-white hover:bg-white/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Edit package name"
+                          >
+                            <PencilIcon className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
                       <p className="text-xs opacity-90">
                         {pkg.sections.length} spaces • {pkg.totalItems} items
                       </p>
                     </div>
                   </div>
-                  <div className="relative">
-                    <button className="p-1 hover:bg-white/20 rounded">
-                      <EllipsisVerticalIcon className="w-4 h-4" />
-                    </button>
-                  </div>
                 </div>
               </div>
 
               {/* Package Content */}
-              <div className="p-3">
-                <div className="space-y-2">
+              <div className="p-2">
+                <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">Spaces:</span>
                     <span className="font-medium">{pkg.sections.length}</span>
@@ -261,10 +308,8 @@ const SoftoPackages = () => {
                   </div>
                 </div>
 
-               
-
                 {/* Actions */}
-                <div className="mt-3 pt-2 border-t border-gray-100">
+                <div className="mt-2 pt-2 border-t border-gray-100">
                   <div className="flex space-x-2">
                     <Link
                       to={`/softo-packages/${pkg.id}`}
