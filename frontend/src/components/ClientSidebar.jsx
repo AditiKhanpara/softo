@@ -18,12 +18,12 @@ const ClientSidebar = () => {
   const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
 
   const menuItems = [
-    { name: 'Dashboard', path: '/user-dashboard/module/softo-dashboard', icon: ChartBarIcon },
-    { name: 'Leads', path: '/user-dashboard/module/softo-leads', icon: UserGroupIcon },
-    { name: 'Clients', path: '/user-dashboard/module/softo-clients', icon: UserGroupIcon },
-    { name: 'Quotations', path: '/user-dashboard/module/softo-quotations', icon: DocumentTextIcon },
-    { name: 'Packages', path: '/user-dashboard/module/softo-packages', icon: CubeIcon },
-    { name: 'Settings', path: '/user-dashboard/module/softo-settings', icon: CogIcon },
+    { name: 'Dashboard', path: '/user-dashboard/softo-dashboard', icon: ChartBarIcon },
+    { name: 'Leads', path: '/user-dashboard/softo-leads', icon: UserGroupIcon },
+    { name: 'Clients', path: '/user-dashboard/softo-clients', icon: UserGroupIcon },
+    { name: 'Quotations', path: '/user-dashboard/softo-quotations', icon: DocumentTextIcon },
+    { name: 'Packages', path: '/user-dashboard/softo-packages', icon: CubeIcon },
+    { name: 'Settings', path: '/user-dashboard/softo-settings', icon: CogIcon },
   ];
 
   return (

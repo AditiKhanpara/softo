@@ -26,6 +26,7 @@ import EditSoftoClient from '../pages/module_management/softo_clients/EditSoftoC
 import ViewSoftoClient from '../pages/module_management/softo_clients/ViewSoftoClient';
 import SoftoQuotations from '../pages/module_management/softo_quotations/SoftoQuotations';
 import SoftoPackages from '../pages/module_management/softo_packages/SoftoPackages';
+import PackageDetails from '../pages/module_management/softo_packages/PackageDetails';
 import SoftoSetting from '../pages/module_management/softo_setting/SoftoSetting';
 
 const router = createBrowserRouter([
@@ -88,7 +89,7 @@ const router = createBrowserRouter([
       },
     ],
   },
-  // Client Routes (Client Layout)
+  // Client Routes (Client Layout) - Using shorter paths
   {
     path: '/user-dashboard',
     element: (
@@ -102,61 +103,65 @@ const router = createBrowserRouter([
         element: <UserDashboard />,
       },
       {
-        path: 'module/softo-dashboard',
+        path: 'softo-dashboard',
         element: <SoftoDashboard />,
       },
       {
-        path: 'module/softo-leads',
+        path: 'softo-leads',
         element: <SoftoLeads />,
       },
       {
-        path: 'module/softo-leads/add',
+        path: 'softo-leads/add',
         element: <AddSoftoLead />,
       },
       {
-        path: 'module/softo-leads/edit/:id',
+        path: 'softo-leads/edit/:id',
         element: <EditSoftoLead />,
       },
       {
-        path: 'module/softo-leads/view/:id',
+        path: 'softo-leads/view/:id',
         element: <ViewSoftoLead />,
       },
       {
-        path: 'module/softo-clients',
+        path: 'softo-clients',
         element: <SoftoClients />,
       },
       {
-        path: 'module/softo-clients/add',
+        path: 'softo-clients/add',
         element: <AddSoftoClient />,
       },
       {
-        path: 'module/softo-clients/edit/:id',
+        path: 'softo-clients/edit/:id',
         element: <EditSoftoClient />,
       },
       {
-        path: 'module/softo-clients/view/:id',
+        path: 'softo-clients/view/:id',
         element: <ViewSoftoClient />,
       },
       {
-        path: 'module/softo-quotations',
+        path: 'softo-quotations',
         element: <SoftoQuotations />,
       },
       {
-        path: 'module/softo-packages',
+        path: 'softo-packages',
         element: <SoftoPackages />,
       },
       {
-        path: 'module/softo-settings',
+        path: 'softo-packages/:id',
+        element: <PackageDetails />,
+      },
+      {
+        path: 'softo-settings',
         element: <SoftoSetting />,
       },
     ],
   },
-  // Shared module routes (accessible by both admin and client)
+  // Shared module routes (accessible by both admin and client) - Using shorter paths
   {
-    path: '/module',
+    path: '/',
     element: (
       <ProtectedRoute>
-        <Layout />
+        <ClientLayout />
       </ProtectedRoute>
     ),
     children: [
@@ -203,6 +208,10 @@ const router = createBrowserRouter([
       {
         path: 'softo-packages',
         element: <SoftoPackages />,
+      },
+      {
+        path: 'softo-packages/:id',
+        element: <PackageDetails />,
       },
       {
         path: 'softo-settings',
