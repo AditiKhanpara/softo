@@ -31,7 +31,7 @@ exports.createPackageDetail = async (req, res) => {
 
 // READ all package details (only user's, with included Package info)
 exports.getAllPackageDetails = async (req, res) => {
-  const { packageId } = req.body;
+  const { packageId } = req.params;
   try {
     const details = await PackageTable.findAll({
       where: { createdBy: req.user.id, packageId: packageId },
