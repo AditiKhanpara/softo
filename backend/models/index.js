@@ -4,6 +4,9 @@ const Client = require("./clientModel");
 const rolePermission = require("./rolePermissionModel");
 const SoftoClient = require("./softoClientModel");
 const SoftoLead = require("./softoLeadModel");
+const Quotation = require("./quotationModel");
+const Package = require("./packageModel");
+const PackageTableForm = require("./packageTableFormModel");
 
 // User relationships
 User.hasMany(Lead, {
@@ -40,6 +43,16 @@ Client.hasMany(SoftoLead, {
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
+Client.hasMany(Quotation, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+Client.hasMany(Package, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
 // softoClient relationships
 SoftoClient.belongsTo(Client, {
@@ -55,6 +68,32 @@ SoftoLead.belongsTo(Client, {
   onUpdate: "CASCADE",
 });
 
+// quotation
+Quotation.belongsTo(Client, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+
+// package
+Package.belongsTo(Client, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+Package.hasMany(PackageTableForm, {
+  foreignKey: { name: "packageId" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+
+// packageTable
+PackageTableForm.belongsTo(Package, {
+  foreignKey: { name: "packageId" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+
 module.exports = {
   User,
   Lead,
@@ -62,4 +101,7 @@ module.exports = {
   rolePermission,
   SoftoClient,
   SoftoLead,
+  Quotation,
+  Package,
+  PackageTableForm,
 };
