@@ -1,4 +1,4 @@
-const PackageTable = require("../models/PackageTable");
+const { PackageTable } = require("../models/");
 
 // format response based on type
 function formatByType(entry) {
@@ -94,25 +94,6 @@ const updateMyFormType = async (req, res) => {
   } catch (err) {
     console.error("Update Type Error:", err);
     res.status(500).json({ error: "Failed to update form type" });
-  }
-};
-
-const deleteMyForm = async (req, res) => {
-  try {
-    const userId = req.user.id;
-
-    const form = await PackageTable.findOne({ where: { createdBy: userId } });
-
-    if (!form) {
-      return res.status(404).json({ error: "Form not found" });
-    }
-
-    await form.destroy();
-
-    res.status(200).json({ message: "Form deleted successfully" });
-  } catch (err) {
-    console.error("Delete Form Error:", err);
-    res.status(500).json({ error: "Failed to delete form" });
   }
 };
 

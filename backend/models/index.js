@@ -7,6 +7,7 @@ const SoftoLead = require("./softoLeadModel");
 const Quotation = require("./quotationModel");
 const Package = require("./packageModel");
 const PackageTableForm = require("./packageTableFormModel");
+const PackageTable = require("./packageTableModel");
 
 // User relationships
 User.hasMany(Lead, {
@@ -53,6 +54,16 @@ Client.hasMany(Package, {
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
+Client.hasMany(PackageTableForm, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+Client.hasMany(PackageTable, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
 // softoClient relationships
 SoftoClient.belongsTo(Client, {
@@ -88,9 +99,14 @@ Package.hasMany(PackageTableForm, {
 });
 
 // packageTable
-PackageTableForm.belongsTo(Package, {
+PackageTable.belongsTo(Package, {
   foreignKey: { name: "packageId" },
   onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+PackageTable.belongsTo(Client, {
+  foreignKey: { name: "createdBy" },
+  onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
 
@@ -104,4 +120,5 @@ module.exports = {
   Quotation,
   Package,
   PackageTableForm,
+  PackageTable,
 };

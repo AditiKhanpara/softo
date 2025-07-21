@@ -1,4 +1,4 @@
-const Package = require("../models/Package");
+const { Package, PackageTableForm } = require("../models/");
 
 // Create a new package
 const createPackage = async (req, res) => {
@@ -6,11 +6,15 @@ const createPackage = async (req, res) => {
     const { name } = req.body;
     const createdBy = req.user.id;
 
+    // Create the Package
     const newPackage = await Package.create({ name, createdBy });
 
-    res.status(201).json(newPackage);
+    res.status(201).json({
+      message: "Package and form created successfully",
+      package: newPackage,
+    });
   } catch (error) {
-    console.error("Error creating package:", error);
+    console.error("Error creating package and form:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -18,7 +22,9 @@ const createPackage = async (req, res) => {
 // Get all packages
 const getAllPackages = async (req, res) => {
   try {
-    const packages = await Package.findAll();
+    const packages = await Package.findAll({
+      where: { createdBy: req.user.id },
+    });
     res.status(200).json(packages);
   } catch (error) {
     console.error("Error fetching packages:", error);
@@ -30,10 +36,14 @@ const getAllPackages = async (req, res) => {
 const getPackageById = async (req, res) => {
   try {
     const { id } = req.params;
-    const pkg = await Package.findByPk(id);
+    const pkg = await Package.findOne({
+      where: { id, createdBy: req.user.id },
+    });
 
     if (!pkg) {
-      return res.status(404).json({ error: "Package not found" });
+      return res
+        .status(404)
+        .json({ error: "Package not found or access denied" });
     }
 
     res.status(200).json(pkg);
@@ -49,19 +59,17 @@ const updatePackage = async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
 
-    const pkg = await Package.findByPk(id);
+    const pkg = await Package.findOne({
+      where: { id, createdBy: req.user.id },
+    });
 
     if (!pkg) {
-      return res.status(404).json({ error: "Package not found" });
+      return res
+        .status(404)
+        .json({ error: "Package not found or access denied" });
     }
 
-    // Optional: check if the user updating is the creator
-    // if (pkg.createdBy !== req.user.id) {
-    //   return res.status(403).json({ error: "Not authorized to update this package" });
-    // }
-
     pkg.name = name || pkg.name;
-
     await pkg.save();
 
     res.status(200).json(pkg);
@@ -76,16 +84,15 @@ const deletePackage = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const pkg = await Package.findByPk(id);
+    const pkg = await Package.findOne({
+      where: { id, createdBy: req.user.id },
+    });
 
     if (!pkg) {
-      return res.status(404).json({ error: "Package not found" });
+      return res
+        .status(404)
+        .json({ error: "Package not found or access denied" });
     }
-
-    // Optional: check if the user deleting is the creator
-    // if (pkg.createdBy !== req.user.id) {
-    //   return res.status(403).json({ error: "Not authorized to delete this package" });
-    // }
 
     await pkg.destroy();
 
