@@ -1,16 +1,10 @@
 const { SoftoLead } = require("../models/");
 
 // CREATE Lead
-exports.createLead = async (req, res) => {
+exports.createSoftoLead = async (req, res) => {
   try {
     const data = req.body;
-
-    // Set createdBy if user is a client
-    if (req.user.role === "client") {
-      data.createdBy = req.user.id;
-    }
-
-    const newLead = await SoftoLead.create(data);
+    const newLead = await SoftoLead.create({ ...data, createdBy: req.user.id });
     return res.status(201).json(newLead);
   } catch (error) {
     console.error("Create Lead Error:", error);
@@ -19,7 +13,7 @@ exports.createLead = async (req, res) => {
 };
 
 // GET All Leads
-exports.getAllLeads = async (req, res) => {
+exports.getAllSoftoLeads = async (req, res) => {
   try {
     const leads = await SoftoLead.findAll();
     return res.status(200).json(leads);
@@ -30,7 +24,7 @@ exports.getAllLeads = async (req, res) => {
 };
 
 // GET Single Lead by ID
-exports.getLeadById = async (req, res) => {
+exports.getSoftoLeadById = async (req, res) => {
   try {
     const lead = await SoftoLead.findByPk(req.params.id);
     if (!lead) {
@@ -44,7 +38,7 @@ exports.getLeadById = async (req, res) => {
 };
 
 // UPDATE Lead
-exports.updateLead = async (req, res) => {
+exports.updateSoftoLead = async (req, res) => {
   try {
     const lead = await SoftoLead.findByPk(req.params.id);
     if (!lead) {
@@ -60,7 +54,7 @@ exports.updateLead = async (req, res) => {
 };
 
 // DELETE Lead
-exports.deleteLead = async (req, res) => {
+exports.deleteSoftoLead = async (req, res) => {
   try {
     const lead = await SoftoLead.findByPk(req.params.id);
     if (!lead) {

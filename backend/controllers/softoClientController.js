@@ -1,76 +1,219 @@
-const { SoftoClient } = require("../models/");
+const { SoftoClient, SoftoLead } = require("../models/");
 
-// CREATE Client
-exports.createClient = async (req, res) => {
+exports.createSoftoClient = async (req, res) => {
   try {
-    const data = req.body;
+    const { id, fullName, city, email, whatsappNumber, address } =
+      req.body;
 
-    // Set createdBy if user is a client
-    if (req.user.role === "client") {
-      data.createdBy = req.user.id;
+    // CASE 1: Convert Lead to Client
+    if (id) {
+      const lead = await SoftoLead.findOne({
+        where: { id, createdBy: req.user.id },
+      });
+
+      if (!lead) {
+        return res.status(404).json({
+          message: "Lead not found",
+          data: {},
+          success: false,
+        });
+      }
+
+      if (lead.addToClient) {
+        return res.status(409).json({
+          message: "Lead already converted to client",
+          data: {},
+          success: false,
+        });
+      }
+
+      const client = await SoftoClient.create({
+        fullName: lead.fullName,
+        city: lead.city,
+        email: lead.email,
+        whatsappNumber: lead.whatsappNumber,
+        address: lead.address,
+        createdBy: req.user.id,
+      });
+
+      // Mark lead as converted
+      lead.addToClient = true;
+      await lead.save();
+
+      return res.status(201).json({
+        message: "Client created from lead successfully",
+        data: client,
+        success: true,
+      });
     }
 
-    const newClient = await SoftoClient.create(data);
-    return res.status(201).json(newClient);
+    // CASE 2: Direct Client Creation
+    const client = await SoftoClient.create({
+      fullName,
+      city,
+      email,
+      whatsappNumber,
+      address,
+      createdBy: req.user.id,
+    });
+
+    return res.status(201).json({
+      message: "Client created successfully",
+      data: client,
+      success: true,
+    });
   } catch (error) {
     console.error("Create Client Error:", error);
-    return res.status(500).json({ message: "Error creating client", error });
+    return res.status(500).json({
+      message: "Failed to create client",
+      data: {},
+      success: false,
+    });
   }
 };
 
-// GET All Clients
-exports.getAllClients = async (req, res) => {
+// Get all clients
+exports.getAllSoftoClients = async (req, res) => {
   try {
-    const clients = await SoftoClient.findAll();
-    return res.status(200).json(clients);
+    const clients = await SoftoClient.findAll({
+      where: { createdBy: req.user.id },
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({
+      message: "Clients fetched successfully",
+      data: clients,
+      success: true,
+    });
   } catch (error) {
     console.error("Fetch Clients Error:", error);
-    return res.status(500).json({ message: "Error fetching clients", error });
+    res.status(500).json({
+      message: "Failed to fetch clients",
+      data: {},
+      success: false,
+    });
   }
 };
 
-// GET Single Client by ID
-exports.getClientById = async (req, res) => {
+// Get a single client by ID
+exports.getSoftoClientById = async (req, res) => {
   try {
-    const client = await SoftoClient.findByPk(req.params.id);
+    const client = await SoftoClient.findOne({
+      where: { id: req.params.id, createdBy: req.user.id },
+    });
+
     if (!client) {
-      return res.status(404).json({ message: "Client not found" });
+      return res.status(404).json({
+        message: "Client not found",
+        data: {},
+        success: false,
+      });
     }
-    return res.status(200).json(client);
+
+    res.status(200).json({
+      message: "Client fetched successfully",
+      data: client,
+      success: true,
+    });
   } catch (error) {
-    console.error("Fetch Client Error:", error);
-    return res.status(500).json({ message: "Error fetching client", error });
+    console.error("Get Client Error:", error);
+    res.status(500).json({
+      message: "Failed to fetch client",
+      data: {},
+      success: false,
+    });
   }
 };
 
-// UPDATE Client
-exports.updateClient = async (req, res) => {
+// Update a client
+exports.updateSoftoClient = async (req, res) => {
   try {
-    const client = await SoftoClient.findByPk(req.params.id);
+    const client = await SoftoClient.findOne({
+      where: { id: req.params.id, createdBy: req.user.id },
+    });
+
     if (!client) {
-      return res.status(404).json({ message: "Client not found" });
+      return res.status(404).json({
+        message: "Client not found",
+        data: {},
+        success: false,
+      });
     }
 
     await client.update(req.body);
-    return res.status(200).json(client);
+
+    res.status(200).json({
+      message: "Client updated successfully",
+      data: client,
+      success: true,
+    });
   } catch (error) {
     console.error("Update Client Error:", error);
-    return res.status(500).json({ message: "Error updating client", error });
+    res.status(500).json({
+      message: "Failed to update client",
+      data: {},
+      success: false,
+    });
   }
 };
 
-// DELETE Client
-exports.deleteClient = async (req, res) => {
+// Delete a client
+exports.deleteSoftoClient = async (req, res) => {
   try {
-    const client = await SoftoClient.findByPk(req.params.id);
+    const client = await SoftoClient.findOne({
+      where: { id: req.params.id, createdBy: req.user.id },
+    });
+
     if (!client) {
-      return res.status(404).json({ message: "Client not found" });
+      return res.status(404).json({
+        message: "Client not found",
+        data: {},
+        success: false,
+      });
     }
 
     await client.destroy();
-    return res.status(200).json({ message: "Client deleted successfully" });
+
+    res.status(200).json({
+      message: "Client deleted successfully",
+      data: {},
+      success: true,
+    });
   } catch (error) {
     console.error("Delete Client Error:", error);
-    return res.status(500).json({ message: "Error deleting client", error });
+    res.status(500).json({
+      message: "Failed to delete client",
+      data: {},
+      success: false,
+    });
+  }
+};
+
+exports.getSoftoClientProfile = async (req, res) => {
+  try {
+    const client = await SoftoClient.findOne({
+      where: { id: req.user.id }, // Assuming req.user.id is the client's ID
+    });
+
+    if (!client) {
+      return res.status(404).json({
+        message: "Client profile not found",
+        data: {},
+        success: false,
+      });
+    }
+
+    res.status(200).json({
+      message: "Client profile fetched successfully",
+      data: client,
+      success: true,
+    });
+  } catch (error) {
+    console.error("Get Client Profile Error:", error);
+    res.status(500).json({
+      message: "Failed to fetch client profile",
+      data: {},
+      success: false,
+    });
   }
 };

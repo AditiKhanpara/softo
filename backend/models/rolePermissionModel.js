@@ -1,17 +1,13 @@
 const { sequelize } = require("../config/db");
 const { DataTypes } = require("sequelize");
 
-const rolePermission = sequelize.define(
-  "RolePermission",
+const Permission = sequelize.define(
+  "Permission",
   {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-    },
-    role: {
-      type: DataTypes.ENUM("admin", "client"),
-      allowNull: false,
     },
     permission: {
       type: DataTypes.STRING,
@@ -35,8 +31,8 @@ const rolePermission = sequelize.define(
   },
   {
     timestamps: true,
-    tableName: "role_permissions",
+    tableName: "permissions",
   }
 );
 
-module.exports = rolePermission;
+module.exports = Permission;

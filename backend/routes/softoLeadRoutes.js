@@ -1,16 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const softoLeadController = require("../controllers/softoLeadController");
+const {
+  createSoftoLead,
+  getAllSoftoLeads,
+  getSoftoLeadById,
+  updateSoftoLead,
+  deleteSoftoLead,
+} = require("../controllers/softoLeadController");
 const { authenticated } = require("../middleware/authMiddleware");
 
-// Protect all routes
-router.use(authenticated);
-
 // Routes
-router.post("/create", softoLeadController.createLead);
-router.get("/getall", softoLeadController.getAllLeads);
-router.get("/get/:id", softoLeadController.getLeadById);
-router.put("/update/:id", softoLeadController.updateLead);
-router.delete("/delete/:id", softoLeadController.deleteLead);
+router.post("/create", authenticated, createSoftoLead);
+router.get("/getall", authenticated, getAllSoftoLeads);
+router.get("/get/:id", authenticated, getSoftoLeadById);
+router.put("/update/:id", authenticated, updateSoftoLead);
+router.delete("/delete/:id", authenticated, deleteSoftoLead);
 
 module.exports = router;
