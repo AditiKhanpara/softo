@@ -16,7 +16,10 @@ const Sidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    // Check if current path starts with the menu path (for sub-pages)
+    return location.pathname.startsWith(path);
+  };
 
   const toggleModule = () => setIsModuleOpen(!isModuleOpen);
   const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
@@ -27,21 +30,12 @@ const Sidebar = () => {
     { name: 'Clients', path: '/clients', icon: UserIcon },
   ];
 
-//   const moduleItems = [
-//     { name: ' Dashboard', path: '/module/softo-dashboard', icon: ChartBarIcon },
-//     { name: ' Leads', path: '/module/softo-leads', icon: UserGroupIcon },
-//     { name: ' Clients', path: '/module/softo-clients', icon: UserIcon },
-//     { name: ' Quotations', path: '/module/softo-quotations', icon: FolderIcon },
-//     { name: ' Packages', path: '/module/softo-packages', icon: FolderIcon },
-//     { name: ' Settings', path: '/module/softo-settings', icon: CogIcon },
-//   ];
-
   return (
     <>
-      {/* Mobile menu button */}
+      {/* Mobile menu button - hidden on xl screens and larger */}
       <button
         onClick={toggleMobile}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-[#c79a6f]/90 hover:bg-[#c79a6f] text-white shadow-lg transition-colors duration-200"
+        className="fixed top-4 left-4 z-50 p-2 rounded-md bg-[#c79a6f]/90 hover:bg-[#c79a6f] text-white shadow-lg transition-colors duration-200 xl:hidden"
       >
         <Bars3Icon className="w-6 h-6" />
       </button>
@@ -49,7 +43,7 @@ const Sidebar = () => {
       {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out
-        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full xl:translate-x-0'}
       `}>
         {/* Logo */}
         <div className="flex items-center justify-center h-16 bg-[#c79a6f]/90 shadow-sm">
@@ -66,6 +60,7 @@ const Sidebar = () => {
                 <Link
                   key={item.path}
                   to={item.path}
+                  onClick={() => setIsMobileOpen(false)}
                   className={`
                     flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
                     ${isActive(item.path)
@@ -80,15 +75,13 @@ const Sidebar = () => {
               );
             })}
           </div>
-
-          
         </nav>
       </div>
 
-      {/* Overlay for mobile */}
+      {/* Overlay for mobile - only show when sidebar is open */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-30 xl:hidden"
           onClick={toggleMobile}
         />
       )}

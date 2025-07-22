@@ -726,7 +726,7 @@ const PackageDetails = () => {
 
       {/* Add Section Modal */}
       {showAddSectionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-4 w-full max-w-sm mx-4">
             <h3 className="text-base font-medium text-gray-900 mb-3">Add New Space</h3>
             
@@ -780,7 +780,6 @@ const PackageDetails = () => {
                 onClick={() => {
                   setShowAddSectionModal(false);
                   setNewSectionName('');
-                  setNewSectionType('');
                 }}
                 className="px-3 py-1 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm"
               >

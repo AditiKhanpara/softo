@@ -6,7 +6,7 @@ import RoleBasedRoute from '../components/RoleBasedRoute';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import AdminDashboard from '../pages/dashboard/AdminDashboard';
-import UserDashboard from '../pages/dashboard/UserDashboard';
+import SoftoDashboard from '../pages/module_management/softo_dashboard/SoftoDashboard';
 import Leads from '../pages/leads/leads';
 import AddLead from '../pages/leads/AddLead';
 import EditLead from '../pages/leads/EditLead';
@@ -15,7 +15,6 @@ import Clients from '../pages/clients/clients';
 import AddClient from '../pages/clients/AddClient';
 import EditClient from '../pages/clients/EditClient';
 import ViewClient from '../pages/clients/ViewClient';
-import SoftoDashboard from '../pages/module_management/softo_dashboard/SoftoDashboard';
 import SoftoLeads from '../pages/module_management/softo_leads/SoftoLeads';
 import AddSoftoLead from '../pages/module_management/softo_leads/AddSoftoLead';
 import EditSoftoLead from '../pages/module_management/softo_leads/EditSoftoLead';
@@ -103,7 +102,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <UserDashboard />,
+        element: <SoftoDashboard />,
       },
       {
         path: 'softo-dashboard',

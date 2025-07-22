@@ -1,14 +1,11 @@
 import { useState, useEffect } from 'react';
 import { 
   UserIcon,
-  BellIcon,
   ShieldCheckIcon,
-  CogIcon,
   EyeIcon,
-  EyeSlashIcon,
-  CheckIcon,
-  ArchiveBoxIcon
+  EyeSlashIcon
 } from '@heroicons/react/24/outline';
+import authService from '../../../services/authService';
 
 const SoftoSetting = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -16,15 +13,14 @@ const SoftoSetting = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedType, setSelectedType] = useState('description');
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const [profileData, setProfileData] = useState({
-    fullName: 'John Doe',
-    email: 'john@example.com',
-    phone: '+1234567890',
-    company: 'Tech Solutions Inc.',
-    position: 'Project Manager'
+    fullName: '',
+    email: '',
+    phone: '',
+    company: '',
+    position: ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -33,21 +29,33 @@ const SoftoSetting = () => {
     confirmPassword: ''
   });
 
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    smsNotifications: false,
-    projectUpdates: true,
-    quotationAlerts: true,
-    systemAlerts: false
-  });
-
   const [securitySettings, setSecuritySettings] = useState({
     twoFactorAuth: false,
-    sessionTimeout: '30',
     loginAlerts: true
   });
 
- 
+  // Fetch current user data on component mount
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const user = await authService.getCurrentUser();
+        setCurrentUser(user);
+        
+        // Update profile data with actual user data
+        setProfileData({
+          fullName: user?.fullName || user?.name || '',
+          email: user?.email || '',
+          phone: user?.phone || user?.whatsappNumber || '',
+          company: user?.company || '',
+          position: user?.position || ''
+        });
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -65,13 +73,6 @@ const SoftoSetting = () => {
     }));
   };
 
-  const handleNotificationChange = (setting) => {
-    setNotificationSettings(prev => ({
-      ...prev,
-      [setting]: !prev[setting]
-    }));
-  };
-
   const handleSecurityChange = (setting, value) => {
     setSecuritySettings(prev => ({
       ...prev,
@@ -80,12 +81,12 @@ const SoftoSetting = () => {
   };
 
   const handleProfileSave = () => {
-    // TODO: Implement API call
-    alert('Profile updated successfully!');
+    // Profile is read-only, no save functionality needed
+    alert('Profile information is read-only and cannot be modified.');
   };
 
   const handlePasswordSave = () => {
-    // TODO: Implement API call
+    // TODO: Implement API call to update password
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert('New passwords do not match!');
       return;
@@ -100,10 +101,16 @@ const SoftoSetting = () => {
 
   const tabs = [
     { id: 'profile', name: 'Profile', icon: UserIcon },
-    { id: 'security', name: 'Security', icon: ShieldCheckIcon },
-    { id: 'notifications', name: 'Notifications', icon: BellIcon },
-    { id: 'preferences', name: 'Preferences', icon: CogIcon }
+    { id: 'security', name: 'Security', icon: ShieldCheckIcon }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#800000]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -111,7 +118,7 @@ const SoftoSetting = () => {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Settings</h2>
         <p className="text-gray-600">
-          Manage your account settings, security preferences, and notification preferences.
+          Manage your account settings and security preferences.
         </p>
       </div>
 
@@ -145,6 +152,7 @@ const SoftoSetting = () => {
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
+                <p className="text-sm text-gray-600 mb-4">Your profile information is read-only and cannot be modified.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -156,7 +164,8 @@ const SoftoSetting = () => {
                       name="fullName"
                       value={profileData.fullName}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200"
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -169,7 +178,8 @@ const SoftoSetting = () => {
                       name="email"
                       value={profileData.email}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200"
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -182,7 +192,8 @@ const SoftoSetting = () => {
                       name="phone"
                       value={profileData.phone}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200"
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -195,7 +206,8 @@ const SoftoSetting = () => {
                       name="company"
                       value={profileData.company}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200"
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -208,7 +220,8 @@ const SoftoSetting = () => {
                       name="position"
                       value={profileData.position}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200"
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -216,9 +229,10 @@ const SoftoSetting = () => {
               <div className="flex justify-end">
                 <button
                   onClick={handleProfileSave}
-                  className="px-6 py-2 bg-[#800000]/90 hover:bg-[#800000] text-white rounded-lg transition-colors duration-200 shadow-sm"
+                  disabled
+                  className="px-6 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed shadow-sm"
                 >
-                  Save Changes
+                  Read Only
                 </button>
               </div>
             </div>
@@ -357,75 +371,6 @@ const SoftoSetting = () => {
                         }`}
                       />
                     </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Notifications Tab */}
-          {activeTab === 'notifications' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Notification Preferences</h3>
-              <div className="space-y-4">
-                {Object.entries(notificationSettings).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900">
-                        {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                      </h4>
-                      <p className="text-sm text-gray-500">
-                        Receive notifications about {key.toLowerCase().replace(/([A-Z])/g, ' $1')}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleNotificationChange(key)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                        value ? 'bg-[#800000]' : 'bg-gray-200'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                          value ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-       
-
-          {/* Preferences Tab */}
-          {activeTab === 'preferences' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Account Preferences</h3>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="sessionTimeout" className="block text-sm font-medium text-gray-700 mb-2">
-                    Session Timeout (minutes)
-                  </label>
-                  <select
-                    id="sessionTimeout"
-                    value={securitySettings.sessionTimeout}
-                    onChange={(e) => handleSecurityChange('sessionTimeout', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200"
-                  >
-                    <option value="15">15 minutes</option>
-                    <option value="30">30 minutes</option>
-                    <option value="60">1 hour</option>
-                    <option value="120">2 hours</option>
-                    <option value="0">Never</option>
-                  </select>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-blue-900 mb-2">Account Information</h4>
-                  <div className="text-sm text-blue-800 space-y-1">
-                    <p>Account Type: Client</p>
-                    <p>Member Since: January 2024</p>
-                    <p>Last Login: Today at 10:30 AM</p>
                   </div>
                 </div>
               </div>
