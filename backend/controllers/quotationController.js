@@ -101,11 +101,7 @@ exports.getQuotationById = async (req, res) => {
 
     const quotation = await Quotation.findOne({
       where: { id, createdBy: req.user.id },
-      include: [
-        { model: Package, as: "package" },
-        { model: Client, as: "createdByUser" },
-        { model: SoftoClient, as: "softoClient" },
-      ],
+      include: [{ model: Package }, { model: Client }, { model: SoftoClient }],
     });
 
     if (!quotation) {
