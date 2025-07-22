@@ -25,6 +25,9 @@ import AddSoftoClient from '../pages/module_management/softo_clients/AddSoftoCli
 import EditSoftoClient from '../pages/module_management/softo_clients/EditSoftoClient';
 import ViewSoftoClient from '../pages/module_management/softo_clients/ViewSoftoClient';
 import SoftoQuotations from '../pages/module_management/softo_quotations/SoftoQuotations';
+import AddSoftoQuotation from '../pages/module_management/softo_quotations/AddSoftoQuotation';
+import EditSoftoQuotation from '../pages/module_management/softo_quotations/EditSoftoQuotation';
+import ViewSoftoQuotation from '../pages/module_management/softo_quotations/ViewSoftoQuotation';
 import SoftoPackages from '../pages/module_management/softo_packages/SoftoPackages';
 import PackageDetails from '../pages/module_management/softo_packages/PackageDetails';
 import SoftoSetting from '../pages/module_management/softo_setting/SoftoSetting';
@@ -107,7 +110,15 @@ const router = createBrowserRouter([
         element: <SoftoDashboard />,
       },
       {
+        path: 'module/softo-dashboard',
+        element: <SoftoDashboard />,
+      },
+      {
         path: 'softo-leads',
+        element: <SoftoLeads />,
+      },
+      {
+        path: 'module/softo-leads',
         element: <SoftoLeads />,
       },
       {
@@ -115,7 +126,15 @@ const router = createBrowserRouter([
         element: <AddSoftoLead />,
       },
       {
+        path: 'module/softo-leads/add',
+        element: <AddSoftoLead />,
+      },
+      {
         path: 'softo-leads/edit/:id',
+        element: <EditSoftoLead />,
+      },
+      {
+        path: 'module/softo-leads/edit/:id',
         element: <EditSoftoLead />,
       },
       {
@@ -123,7 +142,15 @@ const router = createBrowserRouter([
         element: <ViewSoftoLead />,
       },
       {
+        path: 'module/softo-leads/view/:id',
+        element: <ViewSoftoLead />,
+      },
+      {
         path: 'softo-clients',
+        element: <SoftoClients />,
+      },
+      {
+        path: 'module/softo-clients',
         element: <SoftoClients />,
       },
       {
@@ -131,7 +158,15 @@ const router = createBrowserRouter([
         element: <AddSoftoClient />,
       },
       {
+        path: 'module/softo-clients/add',
+        element: <AddSoftoClient />,
+      },
+      {
         path: 'softo-clients/edit/:id',
+        element: <EditSoftoClient />,
+      },
+      {
+        path: 'module/softo-clients/edit/:id',
         element: <EditSoftoClient />,
       },
       {
@@ -139,11 +174,47 @@ const router = createBrowserRouter([
         element: <ViewSoftoClient />,
       },
       {
+        path: 'module/softo-clients/view/:id',
+        element: <ViewSoftoClient />,
+      },
+      {
         path: 'softo-quotations',
         element: <SoftoQuotations />,
       },
       {
+        path: 'module/softo-quotations',
+        element: <SoftoQuotations />,
+      },
+      {
+        path: 'softo-quotations/add',
+        element: <AddSoftoQuotation />,
+      },
+      {
+        path: 'module/softo-quotations/add',
+        element: <AddSoftoQuotation />,
+      },
+      {
+        path: 'softo-quotations/edit/:id',
+        element: <EditSoftoQuotation />,
+      },
+      {
+        path: 'module/softo-quotations/edit/:id',
+        element: <EditSoftoQuotation />,
+      },
+      {
+        path: 'softo-quotations/view/:id',
+        element: <ViewSoftoQuotation />,
+      },
+      {
+        path: 'module/softo-quotations/view/:id',
+        element: <ViewSoftoQuotation />,
+      },
+      {
         path: 'softo-packages',
+        element: <SoftoPackages />,
+      },
+      {
+        path: 'module/softo-packages',
         element: <SoftoPackages />,
       },
       {
@@ -151,7 +222,15 @@ const router = createBrowserRouter([
         element: <PackageDetails />,
       },
       {
+        path: 'module/softo-packages/:id',
+        element: <PackageDetails />,
+      },
+      {
         path: 'softo-settings',
+        element: <SoftoSetting />,
+      },
+      {
+        path: 'module/softo-settings',
         element: <SoftoSetting />,
       },
     ],
@@ -170,7 +249,15 @@ const router = createBrowserRouter([
         element: <SoftoDashboard />,
       },
       {
+        path: 'module/softo-dashboard',
+        element: <SoftoDashboard />,
+      },
+      {
         path: 'softo-leads',
+        element: <SoftoLeads />,
+      },
+      {
+        path: 'module/softo-leads',
         element: <SoftoLeads />,
       },
       {
@@ -178,7 +265,15 @@ const router = createBrowserRouter([
         element: <AddSoftoLead />,
       },
       {
+        path: 'module/softo-leads/add',
+        element: <AddSoftoLead />,
+      },
+      {
         path: 'softo-leads/edit/:id',
+        element: <EditSoftoLead />,
+      },
+      {
+        path: 'module/softo-leads/edit/:id',
         element: <EditSoftoLead />,
       },
       {
@@ -186,7 +281,15 @@ const router = createBrowserRouter([
         element: <ViewSoftoLead />,
       },
       {
+        path: 'module/softo-leads/view/:id',
+        element: <ViewSoftoLead />,
+      },
+      {
         path: 'softo-clients',
+        element: <SoftoClients />,
+      },
+      {
+        path: 'module/softo-clients',
         element: <SoftoClients />,
       },
       {
@@ -194,7 +297,15 @@ const router = createBrowserRouter([
         element: <AddSoftoClient />,
       },
       {
+        path: 'module/softo-clients/add',
+        element: <AddSoftoClient />,
+      },
+      {
         path: 'softo-clients/edit/:id',
+        element: <EditSoftoClient />,
+      },
+      {
+        path: 'module/softo-clients/edit/:id',
         element: <EditSoftoClient />,
       },
       {
@@ -202,11 +313,47 @@ const router = createBrowserRouter([
         element: <ViewSoftoClient />,
       },
       {
+        path: 'module/softo-clients/view/:id',
+        element: <ViewSoftoClient />,
+      },
+      {
         path: 'softo-quotations',
         element: <SoftoQuotations />,
       },
       {
+        path: 'module/softo-quotations',
+        element: <SoftoQuotations />,
+      },
+      {
+        path: 'softo-quotations/add',
+        element: <AddSoftoQuotation />,
+      },
+      {
+        path: 'module/softo-quotations/add',
+        element: <AddSoftoQuotation />,
+      },
+      {
+        path: 'softo-quotations/edit/:id',
+        element: <EditSoftoQuotation />,
+      },
+      {
+        path: 'module/softo-quotations/edit/:id',
+        element: <EditSoftoQuotation />,
+      },
+      {
+        path: 'softo-quotations/view/:id',
+        element: <ViewSoftoQuotation />,
+      },
+      {
+        path: 'module/softo-quotations/view/:id',
+        element: <ViewSoftoQuotation />,
+      },
+      {
         path: 'softo-packages',
+        element: <SoftoPackages />,
+      },
+      {
+        path: 'module/softo-packages',
         element: <SoftoPackages />,
       },
       {
@@ -214,7 +361,15 @@ const router = createBrowserRouter([
         element: <PackageDetails />,
       },
       {
+        path: 'module/softo-packages/:id',
+        element: <PackageDetails />,
+      },
+      {
         path: 'softo-settings',
+        element: <SoftoSetting />,
+      },
+      {
+        path: 'module/softo-settings',
         element: <SoftoSetting />,
       },
     ],

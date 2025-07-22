@@ -384,7 +384,7 @@ const PackageDetails = () => {
       </div>
 
       {/* Package Summary */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
+      {/* <div className="bg-white rounded-lg shadow-sm p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="text-center">
             <div className="text-xl font-bold text-[#800000]">{sections.length}</div>
@@ -409,7 +409,7 @@ const PackageDetails = () => {
             <div className="text-xs text-gray-600">Description Spaces</div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Spaces */}
       {sortedSections.map((section, sectionIndex) => {

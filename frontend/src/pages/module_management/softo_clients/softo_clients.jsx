@@ -23,7 +23,20 @@ const SoftoClients = () => {
       setLoading(true);
       const data = await softoClientsService.getAllClients();
       console.log('Softo clients data:', data);
-      setClients(Array.isArray(data) ? data : []);
+      console.log('Data type:', typeof data);
+      console.log('Is array:', Array.isArray(data));
+      
+      // Handle different response formats
+      let clientsArray = [];
+      if (Array.isArray(data)) {
+        clientsArray = data;
+      } else if (data && data.data && Array.isArray(data.data)) {
+        clientsArray = data.data;
+      } else if (data && Array.isArray(data)) {
+        clientsArray = data;
+      }
+      
+      setClients(clientsArray);
       setError(null);
     } catch (err) {
       console.error('Error fetching softo clients:', err);
@@ -263,7 +276,7 @@ const SoftoClients = () => {
       </div>
 
       {/* Summary */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      {/* <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-center">
           <p className="text-sm text-gray-600">
             Showing {filteredClients.length} of {clients.length} clients
@@ -272,7 +285,7 @@ const SoftoClients = () => {
             Total clients: {clients.length}
           </p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

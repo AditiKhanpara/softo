@@ -37,18 +37,23 @@ class SoftoClientsService {
   async getAllClients() {
     try {
       const response = await this.makeRequest(`${this.baseURL}/getall`);
-      return response;
+      return response.data || response;
     } catch (error) {
       console.error('Error fetching softo clients:', error);
       throw error;
     }
   }
 
+  // Get all softo clients (alias for getAllClients)
+  async getAllSoftoClients() {
+    return this.getAllClients();
+  }
+
   // Get client by ID
   async getClientById(id) {
     try {
       const response = await this.makeRequest(`${this.baseURL}/get/${id}`);
-      return response;
+      return response.data || response;
     } catch (error) {
       console.error('Error fetching softo client:', error);
       throw error;
@@ -62,7 +67,7 @@ class SoftoClientsService {
         method: 'POST',
         body: JSON.stringify(clientData),
       });
-      return response;
+      return response.data || response;
     } catch (error) {
       console.error('Error creating softo client:', error);
       throw error;
@@ -76,7 +81,7 @@ class SoftoClientsService {
         method: 'PUT',
         body: JSON.stringify(clientData),
       });
-      return response;
+      return response.data || response;
     } catch (error) {
       console.error('Error updating softo client:', error);
       throw error;

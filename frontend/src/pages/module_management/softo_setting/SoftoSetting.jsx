@@ -15,7 +15,6 @@ const SoftoSetting = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [packageType, setPackageType] = useState('description');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState('description');
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -48,65 +47,7 @@ const SoftoSetting = () => {
     loginAlerts: true
   });
 
-  // Fetch current package type on component mount
-  useEffect(() => {
-    fetchPackageType();
-  }, []);
-
-  const fetchPackageType = async () => {
-    try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('http://localhost:5000/api/package-form/get');
-      // const data = await response.json();
-      // setPackageType(data.type || 'description');
-      
-      // For now, using localStorage as fallback
-      const savedType = localStorage.getItem('packageType');
-      if (savedType) {
-        setPackageType(savedType);
-        setSelectedType(savedType);
-      }
-    } catch (error) {
-      console.error('Error fetching package type:', error);
-    }
-  };
-
-  const handlePackageTypeSelection = (newType) => {
-    setSelectedType(newType);
-    setShowConfirmation(true);
-  };
-
-  const handlePackageTypeConfirm = async () => {
-    setIsLoading(true);
-    try {
-      // TODO: Replace with actual API call
-      // await fetch('http://localhost:5000/api/package-form/update-type', {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${localStorage.getItem('token')}`
-      //   },
-      //   body: JSON.stringify({ type: selectedType })
-      // });
-      
-      setPackageType(selectedType);
-      localStorage.setItem('packageType', selectedType);
-      setShowConfirmation(false);
-      
-      // Show success message
-      alert(`Package type updated to ${selectedType === 'description' ? 'Description-based' : 'Square Footage-based'}`);
-    } catch (error) {
-      console.error('Error updating package type:', error);
-      alert('Failed to update package type. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handlePackageTypeCancel = () => {
-    setSelectedType(packageType); // Reset to current type
-    setShowConfirmation(false);
-  };
+ 
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -161,7 +102,6 @@ const SoftoSetting = () => {
     { id: 'profile', name: 'Profile', icon: UserIcon },
     { id: 'security', name: 'Security', icon: ShieldCheckIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
-    { id: 'packages', name: 'Package Settings', icon: ArchiveBoxIcon },
     { id: 'preferences', name: 'Preferences', icon: CogIcon }
   ];
 
@@ -456,144 +396,7 @@ const SoftoSetting = () => {
             </div>
           )}
 
-          {/* Package Settings Tab */}
-          {activeTab === 'packages' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Package Type Configuration</h3>
-                <p className="text-gray-600 mb-6">
-                  Choose how you want to manage your package details. This setting will determine the table structure when you add new packages.
-                </p>
-                
-                <div className="space-y-4">
-                  {/* Description-based Option */}
-                  <div className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 ${
-                    selectedType === 'description' 
-                      ? 'border-[#800000] bg-[#800000]/5' 
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <input
-                            type="radio"
-                            id="description-type"
-                            name="packageType"
-                            value="description"
-                            checked={selectedType === 'description'}
-                            onChange={(e) => handlePackageTypeSelection(e.target.value)}
-                            className="w-4 h-4 text-[#800000] border-gray-300 focus:ring-[#800000]"
-                          />
-                          <label htmlFor="description-type" className="ml-3 text-lg font-medium text-gray-900">
-                            Description-based Packages
-                          </label>
-                        </div>
-                        <p className="text-gray-600 mb-3">
-                          Use this option for packages that require detailed descriptions and specifications.
-                        </p>
-                        <div className="bg-gray-50 rounded p-3">
-                          <h4 className="text-sm font-medium text-gray-900 mb-2">Table Structure:</h4>
-                          <div className="text-sm text-gray-600 space-y-1">
-                            <p>• Sr No | Carpentry Work | Description | Size | Price | Actions</p>
-                            <p>• Manual price entry</p>
-                            <p>• Detailed descriptions for each item</p>
-                            <p>• Flexible size specifications</p>
-                          </div>
-                        </div>
-                      </div>
-                      {selectedType === 'description' && (
-                        <div className="ml-4">
-                          <CheckIcon className="w-6 h-6 text-[#800000]" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Square Footage-based Option */}
-                  <div className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 ${
-                    selectedType === 'squareNet' 
-                      ? 'border-[#800000] bg-[#800000]/5' 
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <input
-                            type="radio"
-                            id="squareNet-type"
-                            name="packageType"
-                            value="squareNet"
-                            checked={selectedType === 'squareNet'}
-                            onChange={(e) => handlePackageTypeSelection(e.target.value)}
-                            className="w-4 h-4 text-[#800000] border-gray-300 focus:ring-[#800000]"
-                          />
-                          <label htmlFor="squareNet-type" className="ml-3 text-lg font-medium text-gray-900">
-                            Square Footage-based Packages
-                          </label>
-                        </div>
-                        <p className="text-gray-600 mb-3">
-                          Use this option for packages that require area calculations and square footage pricing.
-                        </p>
-                        <div className="bg-gray-50 rounded p-3">
-                          <h4 className="text-sm font-medium text-gray-900 mb-2">Table Structure:</h4>
-                          <div className="text-sm text-gray-600 space-y-1">
-                            <p>• Sr No | Item | Nos | Width | Length | Sq. Ft. | Rs./sFt. | Total | Actions</p>
-                            <p>• Automatic square footage calculation</p>
-                            <p>• Price per square foot</p>
-                            <p>• Automatic total calculation</p>
-                          </div>
-                        </div>
-                      </div>
-                      {selectedType === 'squareNet' && (
-                        <div className="ml-4">
-                          <CheckIcon className="w-6 h-6 text-[#800000]" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {isLoading && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#800000] mr-2"></div>
-                      <span className="text-sm text-blue-800">Updating package type...</span>
-                    </div>
-                  </div>
-                )}
-
-                {showConfirmation && (
-                  <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <h4 className="text-sm font-medium text-yellow-900 mb-2">Confirm Package Type Change</h4>
-                    <p className="text-sm text-yellow-800">
-                      You are about to change the package type to <strong>{selectedType === 'description' ? 'Description-based' : 'Square Footage-based'}</strong>. This action cannot be undone.
-                    </p>
-                    <div className="flex justify-end mt-4 space-x-2">
-                      <button
-                        onClick={handlePackageTypeCancel}
-                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors duration-200"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handlePackageTypeConfirm}
-                        className="px-4 py-2 bg-[#800000]/90 hover:bg-[#800000] text-white rounded-lg transition-colors duration-200 shadow-sm"
-                      >
-                        Confirm Change
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <h4 className="text-sm font-medium text-yellow-900 mb-2">Important Note:</h4>
-                  <p className="text-sm text-yellow-800">
-                    Changing the package type will affect how new packages are created. Existing packages will retain their current structure.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+       
 
           {/* Preferences Tab */}
           {activeTab === 'preferences' && (

@@ -67,38 +67,35 @@ const SoftoPackages = () => {
     setFilteredPackages(filtered);
   }, [searchText, packages]);
 
-  const getPackageColor = (name) => {
-    if (!name) return { 
-      bg: 'linear-gradient(135deg, #607D8B 0%, #455A64 100%)', 
-      text: '#fff',
+  const getPackageColor = (pkg, index) => {
+    if (!pkg || !pkg.name) return { 
+      bg: 'linear-gradient(135deg, #E8E8E8 0%, #D4D4D4 100%)', 
+      text: '#4A5568',
       icon: <ArchiveBoxIcon className="w-4 h-4" />
     };
     
-    const lower = name.toLowerCase();
+    // Use index to cycle through 3 fixed colors
+    const colorIndex = index % 3;
     
-    if (lower.includes('kitchen')) return { 
-      bg: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)', 
-      text: '#fff',
-      icon: <ArchiveBoxIcon className="w-4 h-4" />
-    };
+    const colorSchemes = [
+      {
+        bg: 'linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%)',
+        text: '#2D3748',
+        icon: <ArchiveBoxIcon className="w-4 h-4" />
+      },
+      {
+        bg: 'linear-gradient(135deg, #FEF5E7 0%, #FED7AA 100%)',
+        text: '#744210',
+        icon: <ArchiveBoxIcon className="w-4 h-4" />
+      },
+      {
+        bg: 'linear-gradient(135deg, #F0FFF4 0%, #C6F6D5 100%)',
+        text: '#22543D',
+        icon: <ArchiveBoxIcon className="w-4 h-4" />
+      }
+    ];
     
-    if (lower.includes('bathroom')) return { 
-      bg: 'linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)', 
-      text: '#fff',
-      icon: <ArchiveBoxIcon className="w-4 h-4" />
-    };
-    
-    if (lower.includes('living')) return { 
-      bg: 'linear-gradient(135deg, #A8E6CF 0%, #7FCDCD 100%)', 
-      text: '#fff',
-      icon: <ArchiveBoxIcon className="w-4 h-4" />
-    };
-    
-    return {
-      bg: 'linear-gradient(135deg, #607D8B 0%, #455A64 100%)',
-      text: '#fff',
-      icon: <ArchiveBoxIcon className="w-4 h-4" />
-    };
+    return colorSchemes[colorIndex];
   };
 
   const getTypeLabel = (type) => {
@@ -219,18 +216,18 @@ const SoftoPackages = () => {
       </div>
 
       {/* Packages Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {filteredPackages.map(pkg => {
-          const { bg, text, icon } = getPackageColor(pkg.name);
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3">
+        {filteredPackages.map((pkg, index) => {
+          const { bg, text, icon } = getPackageColor(pkg, index);
           
           return (
             <div
               key={pkg.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 overflow-hidden group"
+              className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden group transform hover:scale-[1.02]"
             >
               {/* Package Header */}
               <div 
-                className="p-2 text-white"
+                className="p-3"
                 style={{ background: bg }}
               >
                 <div className="flex justify-between items-start">
@@ -252,20 +249,20 @@ const SoftoPackages = () => {
                                 handleCancelPackageEdit();
                               }
                             }}
-                            className="bg-white/20 text-white placeholder-white/70 px-2 py-1 rounded text-sm border border-white/30 focus:outline-none focus:border-white/50"
+                            className="bg-white/20 text-gray-800 placeholder-gray-600 px-2 py-1 rounded text-sm border border-white/30 focus:outline-none focus:border-white/50"
                             placeholder="Enter package name"
                             autoFocus
                           />
                           <button
                             onClick={handleSavePackageEdit}
-                            className="p-1 text-green-300 hover:text-green-100 hover:bg-white/10 rounded"
+                            className="p-1 text-green-600 hover:text-green-800 hover:bg-white/10 rounded"
                             title="Save"
                           >
                             <CheckIcon className="w-3 h-3" />
                           </button>
                           <button
                             onClick={handleCancelPackageEdit}
-                            className="p-1 text-red-300 hover:text-red-100 hover:bg-white/10 rounded"
+                            className="p-1 text-red-600 hover:text-red-800 hover:bg-white/10 rounded"
                             title="Cancel"
                           >
                             <XMarkIcon className="w-3 h-3" />
@@ -273,17 +270,18 @@ const SoftoPackages = () => {
                         </div>
                       ) : (
                         <div className="flex items-center space-x-1">
-                          <h3 className="font-semibold text-sm">{pkg.name}</h3>
+                          <h3 className="font-semibold text-sm" style={{ color: text }}>{pkg.name}</h3>
                           <button
                             onClick={() => handleEditPackage(pkg.id, pkg.name)}
-                            className="p-1 text-white/70 hover:text-white hover:bg-white/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="p-1 hover:bg-white/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                            style={{ color: text }}
                             title="Edit package name"
                           >
                             <PencilIcon className="w-3 h-3" />
                           </button>
                         </div>
                       )}
-                      <p className="text-xs opacity-90">
+                      <p className="text-xs opacity-75" style={{ color: text }}>
                         {pkg.sections.length} spaces • {pkg.totalItems} items
                       </p>
                     </div>

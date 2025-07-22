@@ -6,7 +6,9 @@ import {
   TrashIcon,
   PlusIcon,
   EyeIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  UserPlusIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import softoLeadsService from '../../../services/softoLeadsService';
@@ -16,6 +18,8 @@ const SoftoLeads = () => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showConvertModal, setShowConvertModal] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
 
   // Fetch leads from API
   const fetchLeads = async () => {
@@ -23,7 +27,23 @@ const SoftoLeads = () => {
       setLoading(true);
       const data = await softoLeadsService.getAllLeads();
       console.log('Softo leads data:', data);
-      setLeads(Array.isArray(data) ? data : []);
+      console.log('Data type:', typeof data);
+      console.log('Is array:', Array.isArray(data));
+      
+      // Handle different response formats
+      let leadsArray = [];
+      if (Array.isArray(data)) {
+        leadsArray = data;
+      } else if (data && data.data && Array.isArray(data.data)) {
+        leadsArray = data.data;
+      } else if (data && Array.isArray(data)) {
+        leadsArray = data;
+      }
+      
+      // Filter out leads that have already been converted to clients
+      const activeLeads = leadsArray.filter(lead => !lead.addToClient);
+      
+      setLeads(activeLeads);
       setError(null);
     } catch (err) {
       console.error('Error fetching softo leads:', err);
@@ -65,6 +85,27 @@ const SoftoLeads = () => {
         console.error('Error deleting lead:', error);
         alert('Failed to delete lead. Please try again.');
       }
+    }
+  };
+
+  const handleConvertToClient = (lead) => {
+    setSelectedLead(lead);
+    setShowConvertModal(true);
+  };
+
+  const handleConvertSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      await softoLeadsService.convertLeadToClient(selectedLead.id);
+      // Refresh the leads list to get updated data from backend
+      await fetchLeads();
+      alert('Lead converted to client successfully!');
+      setShowConvertModal(false);
+      setSelectedLead(null);
+    } catch (error) {
+      console.error('Error converting lead to client:', error);
+      alert('Failed to convert lead to client. Please try again.');
     }
   };
 
@@ -193,6 +234,9 @@ const SoftoLeads = () => {
                   Square Feet
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Created
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -203,7 +247,7 @@ const SoftoLeads = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
                     {loading ? 'Loading leads...' : 'No leads found'}
                   </td>
                 </tr>
@@ -242,10 +286,28 @@ const SoftoLeads = () => {
                       {lead.squareFeet || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {lead.addToClient ? (
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                          Converted
+                        </span>
+                      ) : (
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                          Available
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(lead.createdAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleConvertToClient(lead)}
+                          className="text-green-600 hover:text-green-800 transition-colors duration-200"
+                          title="Convert to Client"
+                        >
+                          <UserPlusIcon className="w-4 h-4" />
+                        </button>
                         <Link
                           to={`/user-dashboard/module/softo-leads/view/${lead.id}`}
                           className="text-[#800000] hover:text-[#800000]/80 transition-colors duration-200"
@@ -278,7 +340,7 @@ const SoftoLeads = () => {
       </div>
 
       {/* Summary */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      {/* <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-center">
           <p className="text-sm text-gray-600">
             Showing {filteredLeads.length} of {leads.length} leads
@@ -287,7 +349,54 @@ const SoftoLeads = () => {
             Total leads: {leads.length}
           </p>
         </div>
-      </div>
+      </div> */}
+
+      {/* Convert to Client Modal */}
+      {showConvertModal && selectedLead && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Convert Lead to Client
+                </h3>
+                <button
+                  onClick={() => setShowConvertModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleConvertSubmit} className="p-6">
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-4">
+                  Are you sure you want to convert <span className="font-medium text-gray-900">{selectedLead.fullName}</span> from a lead to a client? 
+                  This will move them to your clients list.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowConvertModal(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#800000]/90 hover:bg-[#800000] text-white rounded-lg transition-colors duration-200 shadow-sm flex items-center gap-2"
+                >
+                  <UserPlusIcon className="w-4 h-4" />
+                  Convert to Client
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

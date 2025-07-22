@@ -1,8 +1,8 @@
 const API_BASE_URL = 'http://localhost:5000/api';
 
-class SoftoLeadsService {
+class SoftoQuotationsService {
   constructor() {
-    this.baseURL = `${API_BASE_URL}/softo-leads`;
+    this.baseURL = `${API_BASE_URL}/quotation`;
   }
 
   // Get auth token
@@ -33,81 +33,87 @@ class SoftoLeadsService {
     return response.json();
   }
 
-  // Get all leads
-  async getAllLeads() {
+  // Get all quotations
+  async getAllQuotations() {
     try {
       const response = await this.makeRequest(`${this.baseURL}/getall`);
+      console.log('Quotations response:', response);
+      console.log('Response data:', response.data);
+      console.log('Is array:', Array.isArray(response.data));
       return response.data || response;
     } catch (error) {
-      console.error('Error fetching softo leads:', error);
+      console.error('Error fetching quotations:', error);
       throw error;
     }
   }
 
-  // Get lead by ID
-  async getLeadById(id) {
+  // Get quotation by ID
+  async getQuotationById(id) {
     try {
       const response = await this.makeRequest(`${this.baseURL}/get/${id}`);
       return response.data || response;
     } catch (error) {
-      console.error('Error fetching softo lead:', error);
+      console.error('Error fetching quotation:', error);
       throw error;
     }
   }
 
-  // Create new lead
-  async createLead(leadData) {
+  // Create new quotation
+  async createQuotation(quotationData) {
     try {
+      console.log('Creating quotation with data:', quotationData);
       const response = await this.makeRequest(`${this.baseURL}/create`, {
         method: 'POST',
-        body: JSON.stringify(leadData),
+        body: JSON.stringify(quotationData),
       });
+      console.log('Create quotation response:', response);
       return response.data || response;
     } catch (error) {
-      console.error('Error creating softo lead:', error);
+      console.error('Error creating quotation:', error);
       throw error;
     }
   }
 
-  // Update lead
-  async updateLead(id, leadData) {
+  // Update quotation
+  async updateQuotation(id, quotationData) {
     try {
       const response = await this.makeRequest(`${this.baseURL}/update/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(leadData),
+        body: JSON.stringify(quotationData),
       });
       return response.data || response;
     } catch (error) {
-      console.error('Error updating softo lead:', error);
+      console.error('Error updating quotation:', error);
       throw error;
     }
   }
 
-  // Delete lead
-  async deleteLead(id) {
+  // Delete quotation
+  async deleteQuotation(id) {
     try {
       const response = await this.makeRequest(`${this.baseURL}/delete/${id}`, {
         method: 'DELETE',
       });
       return response;
     } catch (error) {
-      console.error('Error deleting softo lead:', error);
+      console.error('Error deleting quotation:', error);
       throw error;
     }
   }
 
-  // Convert lead to client
-  async convertLeadToClient(id) {
+  // Generate PDF
+  async generatePDF(id, isPrint = false) {
     try {
-      // Import the clients service dynamically to avoid circular dependencies
-      const { default: softoClientsService } = await import('./softoClientsService');
-      const response = await softoClientsService.createClient({ id: id });
+      const response = await this.makeRequest(`${this.baseURL}/create/pdf`, {
+        method: 'POST',
+        body: JSON.stringify({ id, isPrint }),
+      });
       return response;
     } catch (error) {
-      console.error('Error converting softo lead to client:', error);
+      console.error('Error generating PDF:', error);
       throw error;
     }
   }
 }
 
-export default new SoftoLeadsService(); 
+export default new SoftoQuotationsService(); 
