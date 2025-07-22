@@ -81,11 +81,7 @@ exports.getAllQuotations = async (req, res) => {
   try {
     const quotations = await Quotation.findAll({
       where: { createdBy: req.user.id },
-      include: [
-        { model: Package, as: "package" },
-        { model: Client, as: "createdByUser" },
-        { model: SoftoClient, as: "softoClient" },
-      ],
+      include: [{ model: Package }, { model: Client }, { model: SoftoClient }],
     });
     return res.status(200).json({
       success: true,
