@@ -58,12 +58,12 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 fixed top-0 right-0 left-0 lg:left-64 z-30">
+    <nav className="bg-white shadow-sm border-b border-gray-200 fixed top-0 right-0 left-0 xl:left-64 z-30">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Page Title */}
           <div className="flex items-center">
-            <h1 className="text-xl font-semibold text-gray-900">
+            <h1 className="text-xl font-semibold text-gray-900 ml-16 xl:ml-0">
               {getPageTitle()}
             </h1>
           </div>

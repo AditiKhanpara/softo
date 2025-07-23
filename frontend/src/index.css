@@ -18,3 +18,19 @@
     min-height: 100vh;
   }
 }
+
+/* Global modal overlay styles */
+@layer components {
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/30 backdrop-blur-sm z-50;
+  }
+  
+  .modal-content {
+    @apply bg-white rounded-lg shadow-xl max-w-md w-full mx-4;
+  }
+  
+  /* Ensure all modals use proper overlay */
+  .modal-backdrop {
+    @apply bg-black/30 backdrop-blur-sm;
+  }
+}

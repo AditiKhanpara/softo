@@ -10,12 +10,12 @@ const Layout = () => {
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="lg:ml-64 flex flex-col min-h-screen">
+      <div className="xl:ml-64 flex flex-col min-h-screen">
         {/* Navbar */}
         <Navbar />
 
         {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pt-24 lg:pt-20">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 pt-20 md:pt-20 lg:pt-20 xl:pt-20">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>

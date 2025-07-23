@@ -316,72 +316,7 @@ const EditSoftoClient = () => {
             </div>
           </div>
 
-          {/* Portal Access */}
-          <div>
-            <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center gap-2">
-              <ShieldCheckIcon className="w-5 h-5" />
-              Portal Access
-            </h4>
-            <div className="mb-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={changePassword}
-                  onChange={(e) => setChangePassword(e.target.checked)}
-                  className="rounded border-gray-300 text-[#800000] focus:ring-[#800000]/20"
-                />
-                <span className="ml-2 text-sm text-gray-700">Change password</span>
-              </label>
-            </div>
-            
-            {changePassword && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                    New Password *
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200 ${
-                      errors.password ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Enter new password"
-                  />
-                  {errors.password && (
-                    <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                  )}
-                  <p className="mt-1 text-xs text-gray-500">
-                    Minimum 6 characters required
-                  </p>
-                </div>
-
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirm New Password *
-                  </label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#800000]/20 focus:border-[#800000] transition-colors duration-200 ${
-                      errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Confirm new password"
-                  />
-                  {errors.confirmPassword && (
-                    <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
+          
           {/* Form Actions */}
                       <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
               <Link

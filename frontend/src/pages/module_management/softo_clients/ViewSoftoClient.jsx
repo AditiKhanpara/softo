@@ -212,28 +212,7 @@ const ViewSoftoClient = () => {
             </div>
           </div>
 
-          {/* Portal Access */}
-          <div>
-            <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center gap-2">
-              <ShieldCheckIcon className="w-5 h-5" />
-              Portal Access
-            </h4>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Access Status
-              </label>
-              {client.hasPassword ? (
-                <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
-                  Active
-                </span>
-              ) : (
-                <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">
-                  No Access
-                </span>
-              )}
-            </div>
-          </div>
-
+         
           {/* Timestamps */}
           <div className="border-t border-gray-200 pt-6">
             <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center gap-2">
@@ -262,39 +241,7 @@ const ViewSoftoClient = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            to={`/user-dashboard/module/softo-clients/edit/${client.id}`}
-            className="px-4 py-2 bg-[#800000]/90 hover:bg-[#800000] text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
-          >
-            <PencilIcon className="w-4 h-4" />
-            Edit Client
-          </Link>
-          <button
-            onClick={() => {
-              if (window.confirm('Are you sure you want to delete this client?')) {
-                // TODO: Implement delete functionality
-                alert('Delete functionality will be implemented here');
-              }
-            }}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200"
-          >
-            Delete Client
-          </button>
-          <button
-            onClick={() => {
-              // TODO: Implement reset password functionality
-              alert('Reset password functionality will be implemented here');
-            }}
-            className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors duration-200"
-          >
-            Reset Password
-          </button>
-        </div>
-      </div>
+     
     </div>
   );
 };
