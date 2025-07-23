@@ -1,8 +1,11 @@
+const { AppError } = require("../middleware/errorHandler");
+const { logger } = require("../middleware/logger");
 const { Quotation, Package, Client, SoftoClient } = require("../models");
 const PdfPrinter = require("pdfmake");
 
 // CREATE
-exports.createQuotation = async (req, res) => {
+exports.createQuotation = async (req, res, next) => {
+  logger.info("🟢 User registration started");
   try {
     const {
       name,
@@ -16,38 +19,35 @@ exports.createQuotation = async (req, res) => {
       validFromDate,
       validToDate,
       softoClientId,
-      packageId,
+      // packageId, 
     } = req.body;
 
     const createdBy = req.user.id;
 
-    // ✅ Required validation
+    // ✅ Validation
     if (!name || !softoClientId || !packageId) {
-      return res.status(400).json({
-        success: false,
-        message: "name, softoClientId, and packageId are required",
-      });
+      throw new AppError(
+        "name, softoClientId, and packageId are required",
+        400
+      );
     }
 
-    // ✅ Optional: Validate package belongs to this user
+    // ✅ Validate package ownership
     const pkg = await Package.findOne({
       where: { id: packageId, createdBy },
     });
 
     if (!pkg) {
-      return res.status(403).json({
-        success: false,
-        message: "Invalid or unauthorized packageId",
-      });
+      throw new AppError("Invalid or unauthorized packageId", 403);
     }
 
-    // ✅ Auto-calculate discountedPrice (if discount and amount are provided)
+    // ✅ Discount calculation
     let discountedPrice = amount;
     if (amount && discount) {
       discountedPrice = amount - discount;
     }
 
-    // ✅ Create Quotation
+    // ✅ Create quotation
     const quotation = await Quotation.create({
       name,
       projectName,
@@ -70,9 +70,8 @@ exports.createQuotation = async (req, res) => {
       data: quotation,
       message: "Quotation created successfully",
     });
-  } catch (error) {
-    console.error("Create Quotation Error:", error);
-    return res.status(500).json({ success: false, message: error.message });
+  } catch (err) {
+    next(err); // 🔥 send to errorHandler.js
   }
 };
 
