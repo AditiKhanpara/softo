@@ -35,7 +35,6 @@ app.use(errorHandler);
 // 🚨 Global process-level error handlers
 process.on("uncaughtException", (err) => {
   logger.error(`Uncaught Exception: ${err.message}`, err);
-  process.exit(1); // optional: crash and restart
 });
 
 process.on("unhandledRejection", (reason, promise) => {

@@ -1,6 +1,13 @@
 const { AppError } = require("../middleware/errorHandler");
 const { logger } = require("../middleware/logger");
-const { Quotation, Package, Client, SoftoClient } = require("../models");
+const { generateQuotationPDF } = require("../middleware/pdfGenerator");
+const {
+  Quotation,
+  Package,
+  Client,
+  SoftoClient,
+  PackageTable,
+} = require("../models");
 const PdfPrinter = require("pdfmake");
 
 // CREATE
@@ -19,9 +26,8 @@ exports.createQuotation = async (req, res, next) => {
       validFromDate,
       validToDate,
       softoClientId,
-      // packageId, 
+      packageId,
     } = req.body;
-
     const createdBy = req.user.id;
 
     // ✅ Validation
@@ -230,22 +236,39 @@ exports.deleteQuotation = async (req, res) => {
   }
 };
 
-const fonts = {
-  Roboto: {
-    normal: Buffer.from([]), // empty or inlined base64 font (not ideal)
-  },
-};
-
-const printer = new PdfPrinter(fonts);
-
 // createQuotation pdf
-exports.createQuotationPdf = async (req, res) => {
+exports.createQuotationPdf = async (req, res, next) => {
   try {
-    return res
-      .status(200)
-      .json({ success: true, message: "PDF created successfully" });
+    const id = req.body.id;
+    const createdBy = req.user.id;
+
+    let quotation = await Quotation.findOne({
+      where: { id, createdBy },
+      include: [{ model: Package }, { model: SoftoClient }],
+    });
+
+    if (!quotation) throw new AppError("Quotation not found", 404);
+
+    quotation = quotation.toJSON();
+
+    if (quotation.packageId) {
+      const packageDetails = await PackageTable.findAll({
+        where: { packageId: quotation.packageId, createdBy },
+      });
+
+      quotation.packageDetails = packageDetails;
+    }
+
+    const pdfDoc = generateQuotationPDF(quotation);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=quotation-${quotation.id}.pdf`
+    );
+    pdfDoc.pipe(res);
+    pdfDoc.end();
   } catch (error) {
-    console.error("Create Quotation PDF Error:", error);
-    return res.status(500).json({ success: false, message: error.message });
+    next(error);
   }
 };
