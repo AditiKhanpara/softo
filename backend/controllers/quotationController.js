@@ -239,7 +239,7 @@ exports.deleteQuotation = async (req, res) => {
 // createQuotation pdf
 exports.createQuotationPdf = async (req, res, next) => {
   try {
-    const id = req.body.id;
+    const { id, isPrint } = req.body;
     const createdBy = req.user.id;
 
     let quotation = await Quotation.findOne({
@@ -255,19 +255,33 @@ exports.createQuotationPdf = async (req, res, next) => {
       const packageDetails = await PackageTable.findAll({
         where: { packageId: quotation.packageId, createdBy },
       });
-
       quotation.packageDetails = packageDetails;
     }
 
-    const pdfDoc = generateQuotationPDF(quotation);
+    // Generate the PDF stream
+    const pdfDoc = generateQuotationPDF(quotation); // make sure this does NOT call .end()
 
+    // Build safe filename
+    const safe = (str) =>
+      (str || "quotation").replace(/\s+/g, "_").replace(/[^\w\-]/g, "");
+    const clientName = safe(quotation?.SoftoClient?.fullName);
+    const packageName = safe(quotation?.Package?.name);
+    const projectCode = safe(quotation?.projectCode);
+    const filename = `${clientName}_${packageName}_${projectCode}.pdf`;
+
+    // Set headers
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=quotation-${quotation.id}.pdf`
-    );
+    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+
+    // Pipe the PDF to the response and handle stream errors
     pdfDoc.pipe(res);
-    pdfDoc.end();
+
+    pdfDoc.on("error", (err) => {
+      console.error("PDF generation error:", err);
+      return next(new AppError("Failed to generate PDF", 500));
+    });
+
+    pdfDoc.end(); // ✅ Must be called AFTER pipe()
   } catch (error) {
     next(error);
   }
