@@ -11,7 +11,6 @@ class SoftoPackagesService {
     try {
       console.log('Testing backend connection...');
       const token = this.getAuthToken();
-      console.log('Token exists:', !!token);
       
       // Try to access a simple endpoint to test connection
       const response = await fetch(`${API_BASE_URL}/auth/test`, {
@@ -21,7 +20,6 @@ class SoftoPackagesService {
         }
       });
       
-      console.log('Test response status:', response.status);
       return response.ok;
     } catch (error) {
       console.error('Connection test failed:', error);
@@ -70,13 +68,9 @@ class SoftoPackagesService {
       ...options,
     };
 
-    console.log('Making request to:', url);
-    console.log('Request config:', config);
 
     const response = await fetch(url, config);
     
-    console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
     
     if (response.status === 401) {
       throw new Error('Authentication failed. Please log in again.');
@@ -123,11 +117,9 @@ class SoftoPackagesService {
     try {
       console.log('Fetching packages from backend...');
       const response = await this.makeRequest(`${this.baseURL}/getall`);
-      console.log('Backend response for getAllPackages:', response);
       
       // Backend returns array directly, not wrapped in an object
       const packages = Array.isArray(response) ? response : [];
-      console.log('Processed packages array:', packages);
       
       // Enhance backend data with sections from backend (with fallback to localStorage)
       const enhancedPackages = await Promise.all(packages.map(async (pkg) => {
@@ -143,7 +135,6 @@ class SoftoPackagesService {
         };
       }));
       
-      console.log('Enhanced packages:', enhancedPackages);
       return enhancedPackages;
     } catch (error) {
       console.error('Error fetching packages from backend:', error);
@@ -200,7 +191,6 @@ class SoftoPackagesService {
         body: JSON.stringify({ name: packageData.name }),
       });
       
-      console.log('Backend response:', response);
       
       // Backend returns { message, package }
       const newPackage = response.package;
@@ -220,7 +210,6 @@ class SoftoPackagesService {
         lastModified: newPackage.updatedAt ? new Date(newPackage.updatedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
       };
       
-      console.log('Enhanced package:', enhancedPackage);
       return enhancedPackage;
     } catch (error) {
       console.error('Error creating package in backend:', error);
@@ -285,7 +274,6 @@ class SoftoPackagesService {
   // Update package sections (store in both localStorage and backend database)
   async updatePackageSections(id, sections) {
     try {
-      console.log('Updating package sections:', { id, sections });
       
       // Save to localStorage first (immediate persistence)
       this.saveSectionsToStorage(id, sections);
@@ -328,7 +316,6 @@ class SoftoPackagesService {
             }
           };
           
-          console.log('Creating section in backend:', sectionData);
           
           await this.makeRequest(`${API_BASE_URL}/package-details/create`, {
             method: 'POST',
@@ -355,11 +342,9 @@ class SoftoPackagesService {
   // Get sections from backend (using query parameter)
   async getSectionsFromBackend(packageId) {
     try {
-      console.log('Fetching sections for packageId:', packageId);
       
       // Backend now expects query parameter
       const response = await this.makeRequest(`${API_BASE_URL}/package-details/getall?packageId=${packageId}`);
-      console.log('Sections from backend:', response);
       
       if (response.data && Array.isArray(response.data)) {
         return response.data.map(detail => ({
@@ -376,7 +361,6 @@ class SoftoPackagesService {
       console.error('Error fetching sections from backend:', error);
       
       // Fallback to localStorage if backend fails
-      console.log('Backend fetch failed, using localStorage as fallback');
       return this.getSectionsFromStorage(packageId);
     }
   }
@@ -517,9 +501,6 @@ class SoftoPackagesService {
   // Method to check backend integration status
   // Backend integration is now enabled by default since the query parameter issue is fixed
   enableBackendIntegration() {
-    console.log('✅ Backend integration is now enabled!');
-    console.log('✅ Package-details API is working with URL parameters');
-    console.log('✅ Sections are being saved to and retrieved from backend database');
     return {
       status: 'enabled',
       message: 'Backend integration is working properly'

@@ -107,10 +107,56 @@ const SoftoQuotations = () => {
     try {
       setDownloadingId(quotation.id);
 
+      // Step 1: Open new tab with loading message immediately
+      let newTab;
+      if (isPrint) {
+        newTab = window.open("", "_blank");
+        if (!newTab) {
+          alert("Popup blocked. Please allow popups for this site.");
+          return;
+        }
+        newTab.document.write(`
+  <html>
+    <head>
+      <title>Loading PDF Preview...</title>
+      <style>
+        body {
+          margin: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          background: #f9f9f9;
+          font-family: Arial, sans-serif;
+        }
+        .spinner {
+          width: 80px;
+          height: 80px;
+          border: 10px solid #eee;
+          border-top: 10px solid #3f51b5;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      </style>
+    </head>
+    <body>
+      <div>
+        <div class="spinner"></div>
+        <p style="text-align:center;margin-top:20px;">Loading PDF Preview...</p>
+      </div>
+    </body>
+  </html>
+`);
+      }
+
+      // Step 2: Fetch blob
       const response = await softoQuotationsService.generatePDF(
         quotation.id,
         isPrint
-      ); // this is already a Blob
+      ); // already a Blob
 
       const clientName = getClientName(quotation.softoClientId).replace(
         /\s+/g,
@@ -127,10 +173,15 @@ const SoftoQuotations = () => {
       const url = window.URL.createObjectURL(blob);
 
       if (isPrint) {
-        // 👁️ Preview in new tab
-        window.open(url, "_blank");
+        // Step 3: Replace content in new tab with the actual PDF
+        newTab.location.href = url;
+
+        // Optional: Auto-print when fully loaded
+        newTab.onload = () => {
+          newTab.print();
+        };
       } else {
-        // ⬇️ Download the PDF
+        // Direct download
         const link = document.createElement("a");
         link.href = url;
         link.setAttribute("download", filename);
@@ -140,7 +191,8 @@ const SoftoQuotations = () => {
       }
 
       window.URL.revokeObjectURL(url);
-      alert(`PDF ${isPrint ? "opened" : "downloaded"} successfully`);
+
+      // alert(`PDF ${isPrint ? "opened" : "downloaded"} successfully`);
     } catch (error) {
       console.error("Error downloading PDF:", error);
       alert("Failed to download PDF. Please try again.");
@@ -148,7 +200,7 @@ const SoftoQuotations = () => {
       setDownloadingId(null);
     }
   };
-  
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
