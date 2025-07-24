@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  DocumentTextIcon, 
-  PlusIcon, 
+import React, { useState, useEffect } from "react";
+import {
+  DocumentTextIcon,
+  PlusIcon,
   MagnifyingGlassIcon,
   PencilIcon,
   EyeIcon,
   TrashIcon,
   PrinterIcon,
   ArrowDownTrayIcon,
-  EllipsisVerticalIcon
-} from '@heroicons/react/24/outline';
-import { Link, useNavigate } from 'react-router-dom';
-import softoQuotationsService from '../../../services/softoQuotationsService';
-import softoPackagesService from '../../../services/softoPackagesService';
-import softoClientsService from '../../../services/softoClientsService';
+  EllipsisVerticalIcon,
+} from "@heroicons/react/24/outline";
+import { Link, useNavigate } from "react-router-dom";
+import softoQuotationsService from "../../../services/softoQuotationsService";
+import softoPackagesService from "../../../services/softoPackagesService";
+import softoClientsService from "../../../services/softoClientsService";
 
 const SoftoQuotations = () => {
   const [quotations, setQuotations] = useState([]);
   const [filteredQuotations, setFilteredQuotations] = useState([]);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
   const [packages, setPackages] = useState([]);
   const [clients, setClients] = useState([]);
@@ -35,18 +35,13 @@ const SoftoQuotations = () => {
     try {
       setLoading(true);
       const data = await softoQuotationsService.getAllQuotations();
-      console.log('SoftoQuotations - Raw data:', data);
-      console.log('SoftoQuotations - Data type:', typeof data);
-      console.log('SoftoQuotations - Is array:', Array.isArray(data));
-      console.log('SoftoQuotations - Data length:', data?.length);
-      
+
       const quotationsArray = Array.isArray(data) ? data : [];
-      console.log('SoftoQuotations - Final array:', quotationsArray);
-      
+
       setQuotations(quotationsArray);
       setFilteredQuotations(quotationsArray);
     } catch (error) {
-      console.error('Error fetching quotations:', error);
+      console.error("Error fetching quotations:", error);
       setQuotations([]);
       setFilteredQuotations([]);
     } finally {
@@ -58,12 +53,12 @@ const SoftoQuotations = () => {
     try {
       const [packagesData, clientsData] = await Promise.all([
         softoPackagesService.getAllPackages(),
-        softoClientsService.getAllSoftoClients()
+        softoClientsService.getAllSoftoClients(),
       ]);
       setPackages(Array.isArray(packagesData) ? packagesData : []);
       setClients(Array.isArray(clientsData) ? clientsData : []);
     } catch (error) {
-      console.error('Error fetching dropdown data:', error);
+      console.error("Error fetching dropdown data:", error);
       setPackages([]);
       setClients([]);
     }
@@ -71,37 +66,39 @@ const SoftoQuotations = () => {
 
   // Filter quotations based on search
   useEffect(() => {
-    const filtered = quotations.filter(q =>
-      q.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-      q.projectName?.toLowerCase().includes(searchText.toLowerCase()) ||
-      q.projectCode?.toLowerCase().includes(searchText.toLowerCase()) ||
-      getClientName(q.softoClientId)?.toLowerCase().includes(searchText.toLowerCase()) ||
-      getPackageName(q.packageId)?.toLowerCase().includes(searchText.toLowerCase())
+    const filtered = quotations.filter(
+      (q) =>
+        q.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+        q.projectName?.toLowerCase().includes(searchText.toLowerCase()) ||
+        q.projectCode?.toLowerCase().includes(searchText.toLowerCase()) ||
+        getClientName(q.softoClientId)
+          ?.toLowerCase()
+          .includes(searchText.toLowerCase()) ||
+        getPackageName(q.packageId)
+          ?.toLowerCase()
+          .includes(searchText.toLowerCase())
     );
     setFilteredQuotations(filtered);
   }, [searchText, quotations, clients, packages]);
 
   const getClientName = (clientId) => {
-    console.log('Getting client name for ID:', clientId);
-    console.log('Available clients:', clients);
-    const client = clients.find(c => c.id === clientId);
-    console.log('Found client:', client);
-    return client?.name || client?.fullName || 'Unknown Client';
+    const client = clients.find((c) => c.id === clientId);
+    return client?.name || client?.fullName || "Unknown Client";
   };
 
   const getPackageName = (packageId) => {
-    const pkg = packages.find(p => p.id === packageId);
-    return pkg?.name || 'Unknown Package';
+    const pkg = packages.find((p) => p.id === packageId);
+    return pkg?.name || "Unknown Package";
   };
 
   const handleDeleteQuotation = async (quotationId) => {
-    if (window.confirm('Are you sure you want to delete this quotation?')) {
+    if (window.confirm("Are you sure you want to delete this quotation?")) {
       try {
         await softoQuotationsService.deleteQuotation(quotationId);
-        setQuotations(prev => prev.filter(q => q.id !== quotationId));
+        setQuotations((prev) => prev.filter((q) => q.id !== quotationId));
       } catch (error) {
-        console.error('Error deleting quotation:', error);
-        alert('Failed to delete quotation. Please try again.');
+        console.error("Error deleting quotation:", error);
+        alert("Failed to delete quotation. Please try again.");
       }
     }
   };
@@ -109,48 +106,115 @@ const SoftoQuotations = () => {
   const handleDownloadPDF = async (quotation, isPrint = false) => {
     try {
       setDownloadingId(quotation.id);
-      const response = await softoQuotationsService.generatePDF(quotation.id, isPrint);
-      
-      // Create download link
-      const clientName = getClientName(quotation.softoClientId).replace(/\s+/g, '_');
-      const packageName = getPackageName(quotation.packageId).replace(/\s+/g, '_');
-      const projectCode = (quotation.projectCode || '').replace(/\s+/g, '_');
+
+      // Step 1: Open new tab with loading message immediately
+      let newTab;
+      if (isPrint) {
+        newTab = window.open("", "_blank");
+        if (!newTab) {
+          alert("Popup blocked. Please allow popups for this site.");
+          return;
+        }
+        newTab.document.write(`
+  <html>
+    <head>
+      <title>Loading PDF Preview...</title>
+      <style>
+        body {
+          margin: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          background: #f9f9f9;
+          font-family: Arial, sans-serif;
+        }
+        .spinner {
+          width: 80px;
+          height: 80px;
+          border: 10px solid #eee;
+          border-top: 10px solid #3f51b5;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      </style>
+    </head>
+    <body>
+      <div>
+        <div class="spinner"></div>
+        <p style="text-align:center;margin-top:20px;">Loading PDF Preview...</p>
+      </div>
+    </body>
+  </html>
+`);
+      }
+
+      // Step 2: Fetch blob
+      const response = await softoQuotationsService.generatePDF(
+        quotation.id,
+        isPrint
+      ); // already a Blob
+
+      const clientName = getClientName(quotation.softoClientId).replace(
+        /\s+/g,
+        "_"
+      );
+      const packageName = getPackageName(quotation.packageId).replace(
+        /\s+/g,
+        "_"
+      );
+      const projectCode = (quotation.projectCode || "").replace(/\s+/g, "_");
       const filename = `${clientName}_${packageName}_${projectCode}.pdf`;
-      
-      // Handle PDF download (assuming response contains PDF data)
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+
+      const blob = response;
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
+
+      if (isPrint) {
+        // Step 3: Replace content in new tab with the actual PDF
+        newTab.location.href = url;
+
+        // Optional: Auto-print when fully loaded
+        newTab.onload = () => {
+          newTab.print();
+        };
+      } else {
+        // Direct download
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+
       window.URL.revokeObjectURL(url);
-      
-      alert('PDF downloaded successfully');
+
+      // alert(`PDF ${isPrint ? "opened" : "downloaded"} successfully`);
     } catch (error) {
-      console.error('Error downloading PDF:', error);
-      alert('Failed to download PDF. Please try again.');
+      console.error("Error downloading PDF:", error);
+      alert("Failed to download PDF. Please try again.");
     } finally {
       setDownloadingId(null);
     }
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     });
   };
 
   const formatCurrency = (amount) => {
-    if (!amount) return '₹0';
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    if (!amount) return "₹0";
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
     }).format(amount);
   };
 
@@ -160,7 +224,9 @@ const SoftoQuotations = () => {
       <div className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex justify-between items-center">
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-900 mb-1">SOFTO Quotations</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+              SOFTO Quotations
+            </h2>
             <p className="text-sm text-gray-600 mb-3">
               Create and manage project quotations and pricing proposals.
             </p>
@@ -178,7 +244,7 @@ const SoftoQuotations = () => {
           </div>
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => navigate('/user-dashboard/softo-quotations/add')}
+              onClick={() => navigate("/user-dashboard/softo-quotations/add")}
               className="bg-[#800000]/90 hover:bg-[#800000] text-white px-3 py-2 rounded-lg transition-colors duration-200 shadow-sm flex items-center text-sm"
             >
               <PlusIcon className="w-4 h-4 mr-1" />
@@ -223,7 +289,10 @@ const SoftoQuotations = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
+                  <td
+                    colSpan="8"
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#800000]"></div>
                       <span className="ml-2">Loading quotations...</span>
@@ -232,10 +301,15 @@ const SoftoQuotations = () => {
                 </tr>
               ) : filteredQuotations.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
+                  <td
+                    colSpan="8"
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
                     <DocumentTextIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                     <p className="text-sm">
-                      {searchText ? 'No quotations found matching your search.' : 'No quotations found. Create your first quotation to get started.'}
+                      {searchText
+                        ? "No quotations found matching your search."
+                        : "No quotations found. Create your first quotation to get started."}
                     </p>
                   </td>
                 </tr>
@@ -244,20 +318,32 @@ const SoftoQuotations = () => {
                   <tr key={quotation.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{quotation.name}</div>
-                        <div className="text-sm text-gray-500">#{quotation.id?.slice(0, 8)}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {quotation.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          #{quotation.id?.slice(0, 8)}
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{getClientName(quotation.softoClientId)}</div>
+                      <div className="text-sm text-gray-900">
+                        {getClientName(quotation.softoClientId)}
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{getPackageName(quotation.packageId)}</div>
+                      <div className="text-sm text-gray-900">
+                        {getPackageName(quotation.packageId)}
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{quotation.projectName}</div>
-                        <div className="text-sm text-gray-500">{quotation.projectCode}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {quotation.projectName}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {quotation.projectCode}
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
@@ -271,10 +357,14 @@ const SoftoQuotations = () => {
                       )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{formatDate(quotation.validToDate)}</div>
+                      <div className="text-sm text-gray-900">
+                        {formatDate(quotation.validToDate)}
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{formatDate(quotation.createdAt)}</div>
+                      <div className="text-sm text-gray-900">
+                        {formatDate(quotation.createdAt)}
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">

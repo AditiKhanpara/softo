@@ -3,53 +3,37 @@ const path = require("path");
 
 const isProd = process.env.NODE_ENV === "production";
 
-// Clean log formatter
-const logFormat = format.printf(({ timestamp, level, message, stack }) => {
-  const line = "─".repeat(50); // cleaner than just '-'
-  const tag = level.toUpperCase().padEnd(5); // pad for consistent alignment
+const logFormat = format.printf(({ level, message, timestamp, stack }) => {
+  const upperLevel = level.toUpperCase();
 
-  return `${line}
-[${tag}] ${timestamp}
-message: ${message}
-${stack ? `↪ Stack:\n${stack}` : ""}
-${line}\n`;
+  if (stack) {
+    return [
+      `┌─[${upperLevel}] ${timestamp}`,
+      `│ Message: ${message}`,
+      `│`,
+      `│ Stack Trace:`,
+      ...stack.split("\n").map((line) => `│   ${line}`),
+      `└──────────────────────────────`,
+    ].join("\n");
+  }
+
+  return `[${upperLevel}] ${timestamp} - ${message}`;
 });
+
 
 const logger = createLogger({
-  level: isProd ? "error" : "debug",
+  level: isProd ? "error" : "info",
   format: format.combine(
     format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-    format.errors({ stack: true }),
+    format.errors({ stack: true }), // capture stack
     logFormat
   ),
-  transports: [],
+  transports: isProd
+    ? [
+        new transports.File({ filename: path.join(__dirname, "../logs/error.log"), level: "error" }),
+        new transports.File({ filename: path.join(__dirname, "../logs/combined.log") }),
+      ]
+    : [new transports.Console()],
 });
-
-// 📁 Only log to files in production
-if (isProd) {
-  logger.add(
-    new transports.File({
-      filename: path.join(__dirname, "../logs/error.log"),
-      level: "error",
-    })
-  );
-  logger.add(
-    new transports.File({
-      filename: path.join(__dirname, "../logs/combined.log"),
-    })
-  );
-} else {
-  // 💻 Only log to console in development
-  logger.add(
-    new transports.Console({
-      format: format.combine(
-        format.colorize(),
-        format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-        format.errors({ stack: true }),
-        logFormat
-      ),
-    })
-  );
-}
 
 module.exports = { logger };
