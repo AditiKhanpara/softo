@@ -355,17 +355,6 @@ const Leads = () => {
             <div className="text-center text-gray-500 py-8">
               <UserGroupIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
               <p>No leads found. {searchTerm || selectedSource ? 'Try adjusting your search criteria.' : 'Add your first lead to get started.'}</p>
-              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <h4 className="text-sm font-medium text-yellow-800 mb-2">Debug Information</h4>
-                <div className="text-xs text-yellow-700 space-y-1">
-                  <p>Total leads in state: {leads.length}</p>
-                  <p>Filtered leads: {filteredLeads.length}</p>
-                  <p>Search term: "{searchTerm}"</p>
-                  <p>Selected source: "{selectedSource}"</p>
-                  <p>Loading: {loading ? 'Yes' : 'No'}</p>
-                  <p>Error: {error || 'None'}</p>
-                </div>
-              </div>
             </div>
           )}
         </div>

@@ -19,7 +19,7 @@ exports.createQuotation = async (req, res, next) => {
       validFromDate,
       validToDate,
       softoClientId,
-      // packageId, 
+      packageId, 
     } = req.body;
 
     const createdBy = req.user.id;
